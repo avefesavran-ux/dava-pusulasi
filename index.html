@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dava Pusulası | Yapay Zeka Destekli İçtihat ve Dilekçe Asistanı</title>
+    <meta name="description" content="Avukatlar için geliştirilmiş, anlamsal sorgulama yapabilen, dilekçe analizi gerçekleştiren ve UDF desteği sunan yapay zeka tabanlı içtihat asistanı.">
+    <meta name="keywords" content="hukuk, avukat, yapay zeka, içtihat, emsal karar, dilekçe analizi, sözleşme inceleme, yargıtay kararları">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --phi: 1.618;
+            --luxury-gold: #C5A059;
+            --luxury-cream: #FDFCFB;
+            --luxury-slate: #1A1C1E;
+            --luxury-paper: #FFFFFF;
+        }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--luxury-cream);
+            color: var(--luxury-slate);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .font-serif { font-family: 'Cormorant Garamond', serif; }
+        
+        /* Golden Ratio Spacing Utilities */
+        .p-phi { padding: calc(1rem * var(--phi)); }
+        .m-phi { margin: calc(1rem * var(--phi)); }
+        .gap-phi { gap: calc(1rem * var(--phi)); }
+
+        /* Luxury Glassmorphism */
+        .luxury-glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(197, 160, 89, 0.08);
+        }
+
+        .luxury-card {
+            background: var(--luxury-paper);
+            border: 1px solid rgba(26, 28, 30, 0.03);
+            box-shadow: 0 10px 40px -10px rgba(0,0,0,0.02);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        
+        .luxury-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px -15px rgba(197, 160, 89, 0.1);
+            border-color: rgba(197, 160, 89, 0.2);
+        }
+
+        /* Golden Ratio Typography Scale */
+        h1 { font-size: calc(2.25rem * var(--phi)); }
+        h2 { font-size: calc(1.5rem * var(--phi)); }
+        h3 { font-size: calc(1.125rem * var(--phi)); }
+
+        @keyframes reveal {
+            from { opacity: 0; transform: translateY(20px); filter: blur(10px); }
+            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        }
+        .reveal { animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--luxury-gold); border-radius: 10px; }
+
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #C5A059;
+          border-radius: 10px;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="overflow-x-hidden">
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

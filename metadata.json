@@ -1,0 +1,7 @@
+{
+  "name": "Dava Pusulası - Semantik İçtihat Uzmanı",
+  "description": "Avukatlar için geliştirilmiş, anlamsal sorgulama yapabilen, dilekçe analizi gerçekleştiren ve UDF desteği sunan yapay zeka tabanlı içtihat asistanı.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
