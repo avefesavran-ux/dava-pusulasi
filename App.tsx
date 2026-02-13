@@ -9,6 +9,7 @@ import ForumComponent from './components/ForumComponent';
 import PricingModal from './components/PricingModal';
 import LoginModal from './components/LoginModal';
 import ProfileComponent from './components/ProfileComponent';
+import DeadlineCalendar from './components/DeadlineCalendar';
 import { AppTab, UserProfile } from './types';
 
 const App: React.FC = () => {
@@ -73,6 +74,9 @@ const App: React.FC = () => {
         )}
         {activeTab === 'file-converter' && (
           <FileConverter deductCredit={deductCredit} creditsRemaining={credits.remaining} />
+        )}
+        {activeTab === 'deadline-calendar' && (
+          <DeadlineCalendar />
         )}
         {activeTab === 'forum' && (
           <ForumComponent user={user} />
