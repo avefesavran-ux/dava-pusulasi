@@ -15,8 +15,7 @@ const LegalAnalyzer: React.FC<LegalAnalyzerProps> = ({ mode, deductCredit, credi
   const [isParsing, setIsParsing] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [petitionResult, setPetitionResult] = useState<AnalysisResult | null>(null);
-  const [contractResult, setContractResult] = useState<ContractRiskReport | null>(null);
+  const [analysisReport, setAnalysisReport] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const processFile = useCallback(async (file: File) => {
@@ -33,8 +32,7 @@ const LegalAnalyzer: React.FC<LegalAnalyzerProps> = ({ mode, deductCredit, credi
     setFileName(file.name);
     setIsParsing(true);
     setError(null);
-    setPetitionResult(null);
-    setContractResult(null);
+    setAnalysisReport(null);
     
     try {
       const text = await parseDocument(file);
@@ -70,10 +68,10 @@ const LegalAnalyzer: React.FC<LegalAnalyzerProps> = ({ mode, deductCredit, credi
     try {
       if (mode === 'petition') {
         const data = await analyzePetition(fileContent);
-        setPetitionResult(data);
+        setAnalysisReport(data);
       } else {
         const data = await analyzeContractRisk(fileContent);
-        setContractResult(data);
+        setAnalysisReport(data);
       }
       deductCredit(10);
     } catch (err) {
@@ -83,12 +81,11 @@ const LegalAnalyzer: React.FC<LegalAnalyzerProps> = ({ mode, deductCredit, credi
     }
   };
 
-  const getRiskColor = (score: number) => {
-    if (score <= 20) return 'text-emerald-500 border-emerald-100 bg-emerald-50/30';
-    if (score <= 40) return 'text-blue-500 border-blue-100 bg-blue-50/30';
-    if (score <= 60) return 'text-amber-500 border-amber-100 bg-amber-50/30';
-    if (score <= 80) return 'text-orange-500 border-orange-100 bg-orange-50/30';
-    return 'text-red-500 border-red-100 bg-red-50/30';
+  const copyReport = () => {
+    if (analysisReport) {
+      navigator.clipboard.writeText(analysisReport);
+      alert('Analiz raporu kopyalandı.');
+    }
   };
 
   return (
@@ -135,14 +132,18 @@ const LegalAnalyzer: React.FC<LegalAnalyzerProps> = ({ mode, deductCredit, credi
 
         <aside className="lg:col-span-2 space-y-10">
           <div className="luxury-card rounded-[3rem] p-12 space-y-10 border border-slate-50">
-            <h5 className="text-[11px] uppercase tracking-[0.4em] font-black text-[#C5A059]">Metodoloji</h5>
+            <h5 className="text-[11px] uppercase tracking-[0.4em] font-black text-[#C5A059]">Analiz Kriterleri</h5>
             <div className="space-y-10">
               {(mode === 'petition' ? [
-                { title: 'Semantik Tutarlılık', desc: 'İddialar arasındaki mantıksal ağın örülmesi.' },
-                { title: 'Reaktif Strateji', desc: 'Karşı tarafın muhtemel itiraz simülasyonu.' }
+                { title: '🛡️ Usul & Şekil İncelemesi', desc: 'HMK/CMK uyumluluğu ve usuli risklerin tespiti.' },
+                { title: '🧠 Maddi Vakıa & Mantık', desc: 'İddialar ve talepler arasındaki illiyet bağı analizi.' },
+                { title: '⚖️ İspat Yükü Kontrolü', desc: 'Delil yeterliliği ve ispat yükü dağılımı denetimi.' },
+                { title: '🎯 Red Teaming', desc: 'Karşı tarafın saldırabileceği zayıf noktaların simülasyonu.' }
               ] : [
-                { title: 'Senior Associate Gözü', desc: 'Sözleşme risklerini kıdemli avukat titizliğiyle tarama.' },
-                { title: 'Yargıtay Filtresi', desc: 'Maddelerin mahkeme önündeki geçerlilik pratiği.' }
+                { title: '📋 Sözleşme Röntgeni', desc: 'Sözleşmenin hukuki niteliği ve uygulanacak hukuk analizi.' },
+                { title: '🚨 Kırmızı Alarmlar', desc: 'Asimetrik riskler ve satır arası tehlikelerin tespiti.' },
+                { title: '🛡️ Beyaz Alanlar', desc: 'Eksik koruyucu hükümlerin ve boşlukların belirlenmesi.' },
+                { title: '✍️ Redlining', desc: 'Doğrudan alternatif/revize edilmiş madde taslakları.' }
               ]).map((item, i) => (
                 <div key={i}>
                   <p className="font-serif italic text-xl text-slate-900 mb-2">{item.title}</p>
@@ -160,7 +161,36 @@ const LegalAnalyzer: React.FC<LegalAnalyzerProps> = ({ mode, deductCredit, credi
         </div>
       )}
 
-      {/* Rapor içerikleri buralarda petitionResult ve contractResult'a göre render edilir */}
+      {analysisReport && (
+        <div className="max-w-6xl mx-auto space-y-12 reveal">
+          <div className="flex items-center justify-between px-8">
+            <h3 className="text-[11px] uppercase tracking-[0.6em] font-black text-slate-900">
+              {mode === 'petition' ? 'Stratejik Hukuki Check-Up Raporu' : 'Kapsamlı Due Diligence Raporu'}
+            </h3>
+            <button 
+              onClick={copyReport}
+              className="text-[10px] uppercase font-bold text-[#C5A059] hover:underline tracking-widest"
+            >
+              Raporu Kopyala
+            </button>
+          </div>
+
+          <article className="luxury-card p-16 lg:p-24 rounded-[4rem] bg-white relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
+             <div className="relative z-10 prose prose-slate max-w-none">
+                <div className="font-serif text-xl lg:text-2xl leading-[1.8] text-slate-800 whitespace-pre-wrap text-justify selection:bg-[#C5A059]/20">
+                  {analysisReport}
+                </div>
+             </div>
+             
+             <div className="mt-20 pt-10 border-t border-slate-50 text-center">
+                <p className="text-[10px] text-slate-400 font-light italic max-w-lg mx-auto leading-relaxed">
+                  ⚠️ Bu rapor yapay zeka tarafından hazırlanan bir mütalaadır. Avukatın nihai sorumluluğu altındadır.
+                </p>
+             </div>
+          </article>
+        </div>
+      )}
     </div>
   );
 };
