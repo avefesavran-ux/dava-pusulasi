@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { performSemanticSearch } from '../services/geminiService';
 
 interface SearchComponentProps {
@@ -27,9 +27,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
     
     try {
       const data = await performSemanticSearch(query);
-      if (!data) {
-        throw new Error("Sonuç üretilemedi.");
-      }
+      if (!data) throw new Error("Sonuç üretilemedi.");
       setReport(data);
       deductCredit(2);
     } catch (err) {
@@ -39,17 +37,126 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
     }
   };
 
-  const copyToClipboard = () => {
-    if (!report || report.trim() === '') {
+  const copyToClipboard = (text?: string) => {
+    const content = text || report;
+    if (!content || content.trim() === '') {
       alert('Kopyalanacak bir içerik bulunmuyor.');
       return;
     }
-    // String olduğundan emin oluyoruz
-    const textToCopy = String(report);
-    navigator.clipboard.writeText(textToCopy)
-      .then(() => alert('İçtihat raporu panoya kopyalandı.'))
+    navigator.clipboard.writeText(String(content))
+      .then(() => alert('İçerik panoya kopyalandı.'))
       .catch(() => alert('Kopyalama sırasında bir hata oluştu.'));
   };
+
+  const formatTextWithItalics = (text: string) => {
+    if (!text) return null;
+    const parts = text.split(/("[^"]*")/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('"') && part.endsWith('"')) {
+        return <i key={i} className="text-slate-900">{part}</i>;
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
+  const renderedReport = useMemo(() => {
+    if (!report) return null;
+
+    const sectionNames = [
+      'UYUŞMAZLIĞIN HUKUKİ NİTELİĞİ',
+      'YERLEŞİK İÇTİHAT PRENSİBİ',
+      'EMSAL KARAR ANALİZLERİ',
+      'USULİ VE KRİTİK UYARILAR'
+    ];
+
+    const regex = new RegExp(`(${sectionNames.join('|')})`, 'g');
+    const parts = report.split(regex).filter(p => p.trim() !== '');
+
+    const sections: { title: string; content: string }[] = [];
+    for (let i = 0; i < parts.length; i += 2) {
+      if (parts[i] && parts[i + 1]) {
+        sections.push({ title: parts[i].trim(), content: parts[i + 1].trim() });
+      }
+    }
+
+    return sections.map((section, idx) => {
+      if (section.title === 'EMSAL KARAR ANALİZLERİ') {
+        // Her kararı "MAHKEME:" ile ayırıyoruz, böylece tüm bilgiler aynı kartta kalır.
+        const decisions = section.content.split(/(?=MAHKEME:)/).filter(d => d.trim().length > 10);
+        return (
+          <div key={idx} className="space-y-12 reveal">
+            <h3 className="text-2xl font-serif font-black text-slate-900 tracking-wider uppercase border-l-4 border-[#C5A059] pl-6">
+              Bulgular ve Emsaller
+            </h3>
+            <div className="grid grid-cols-1 gap-10">
+              {decisions.map((decision, dIdx) => {
+                const lines = decision.split('\n').map(l => l.trim()).filter(l => l);
+                let mahkeme = '', esas = '', tarih = '', ozet = '';
+                
+                lines.forEach(line => {
+                  if (line.startsWith('MAHKEME:')) mahkeme = line.replace('MAHKEME:', '').trim();
+                  else if (line.startsWith('ESAS/KARAR:')) esas = line.replace('ESAS/KARAR:', '').trim();
+                  else if (line.startsWith('KARAR TARİHİ:')) tarih = line.replace('KARAR TARİHİ:', '').trim();
+                  else if (line.startsWith('ÖZET VE GEREKÇE:')) ozet += line.replace('ÖZET VE GEREKÇE:', '').trim() + ' ';
+                });
+
+                return (
+                  <div key={dIdx} className="luxury-card p-12 lg:p-14 rounded-[3.5rem] bg-white border border-[#C5A059]/10 shadow-xl relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-40 h-40 bg-[#C5A059]/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-[#C5A059]/10 transition-all duration-700"></div>
+                    
+                    <div className="relative z-10 space-y-8">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">MAHKEME / DAİRE</span>
+                          <p className="text-sm font-bold text-slate-900 uppercase">{mahkeme || 'Belirtilmedi'}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">ESAS / KARAR NO</span>
+                          <p className="text-sm font-bold text-slate-900">{esas || 'Belirtilmedi'}</p>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">KARAR TARİHİ</span>
+                          <p className="text-sm font-bold text-slate-900">{tarih || 'Belirtilmedi'}</p>
+                        </div>
+                      </div>
+
+                      <div className="pt-8 border-t border-slate-50">
+                        <div className="flex justify-between items-center mb-6">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">İÇTİHAT ÖZETİ VE HUKUKİ GEREKÇE</span>
+                          <button 
+                            onClick={() => copyToClipboard(ozet)}
+                            className="text-[9px] font-black uppercase tracking-widest text-slate-400 hover:text-[#C5A059] transition-colors"
+                          >
+                            Dilekçeye Kopyala
+                          </button>
+                        </div>
+                        <p className="font-serif text-xl lg:text-2xl text-slate-800 leading-relaxed text-justify">
+                          {formatTextWithItalics(ozet.trim())}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div key={idx} className="space-y-8 reveal">
+          <h3 className="text-2xl font-serif font-black text-slate-900 tracking-wider uppercase border-l-4 border-[#C5A059] pl-6">
+            {section.title}
+          </h3>
+          <div className="luxury-card p-12 lg:p-16 rounded-[4rem] bg-[#FDFCFB]/50 border border-slate-100/50">
+            <div className="text-lg lg:text-xl text-slate-700 font-light leading-[2.1] whitespace-pre-wrap text-justify selection:bg-[#C5A059]/20">
+              {formatTextWithItalics(section.content)}
+            </div>
+          </div>
+        </div>
+      );
+    });
+  }, [report]);
 
   return (
     <div className="space-y-24 reveal pb-32">
@@ -71,20 +178,20 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
             <textarea
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Hukuki uyuşmazlığı, tarafları ve somut olayı anlatın... (Örn: İşçinin mesai saatleri içinde sosyal medya kullanımı nedeniyle haklı fesih kriterleri nelerdir?)"
+              placeholder="Hukuki uyuşmazlığı, tarafları ve somut olayı anlatın..."
               className="w-full p-12 pr-12 rounded-[3.3rem] bg-transparent focus:outline-none min-h-[200px] text-xl font-light placeholder:text-slate-300 transition-all border-none resize-none leading-relaxed"
             />
             <div className="p-8 pt-0 flex justify-between items-center">
                <div className="flex gap-4">
                   <span className="flex items-center gap-2 text-[10px] uppercase font-black text-slate-300 tracking-[0.2em]">
                     <span className={`w-1.5 h-1.5 rounded-full ${loading ? 'bg-[#C5A059] animate-ping' : 'bg-emerald-400'}`}></span>
-                    {loading ? 'Yüksek Mahkeme Kararları Taranıyor...' : 'Semantik Motor Hazır'}
+                    {loading ? 'Yargı Arşivi Taranıyor...' : 'Semantik Motor Hazır'}
                   </span>
                </div>
                <button
                  type="submit"
                  disabled={loading || !query.trim()}
-                 className="px-10 py-5 bg-[#C5A059] text-white font-black rounded-2xl shadow-xl hover:bg-slate-900 transition-all duration-500 disabled:opacity-40 flex items-center justify-center gap-4 text-[11px] tracking-[0.2em] uppercase active:scale-95"
+                 className="px-12 py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-[#C5A059] transition-all duration-500 disabled:opacity-40 flex items-center justify-center gap-4 text-[11px] tracking-[0.2em] uppercase active:scale-95"
                >
                  {loading ? (
                     <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -103,34 +210,29 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
           </div>
         )}
 
-        {/* Report Result Section */}
+        {/* Structured Report Result Section */}
         {report && (
-          <div className="space-y-12 reveal">
-            <div className="flex items-center justify-between px-8">
-              <h3 className="text-[11px] uppercase tracking-[0.6em] font-black text-slate-900">🔍 Bulgular & Emsaller</h3>
+          <div className="space-y-24 reveal mt-12">
+            <div className="flex items-center justify-between px-8 border-b border-slate-100 pb-10">
+              <h3 className="text-[11px] uppercase tracking-[0.6em] font-black text-slate-900">Semantik İçtihat Analiz Raporu</h3>
               <button 
-                onClick={copyToClipboard}
+                onClick={() => copyToClipboard()}
                 className="flex items-center gap-3 text-[10px] uppercase font-bold text-[#C5A059] hover:text-slate-900 transition-colors tracking-widest"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
-                Raporu Kopyala
+                Tam Raporu Kopyala
               </button>
             </div>
 
-            <article className="luxury-card p-16 lg:p-24 rounded-[4rem] bg-white relative overflow-hidden border border-slate-50 shadow-2xl">
-               <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
-               <div className="relative z-10 prose prose-slate max-w-none">
-                  <div className="font-serif text-xl lg:text-2xl leading-[2] text-slate-800 whitespace-pre-wrap text-justify selection:bg-[#C5A059]/20">
-                    {report}
-                  </div>
-               </div>
-               
-               <div className="mt-20 pt-10 border-t border-slate-50 text-center">
-                  <p className="text-[10px] text-slate-400 font-light italic max-w-lg mx-auto leading-relaxed">
-                    ⚠️ Bu mütalaa yapay zeka tarafından Google Search verileriyle derlenmiştir. Karar numaralarını Yargıtay Bilgi İşlem sistemi üzerinden teyit etmeniz tavsiye edilir.
-                  </p>
-               </div>
-            </article>
+            <div className="space-y-24">
+              {renderedReport}
+            </div>
+            
+            <div className="pt-20 border-t border-slate-50 text-center">
+              <p className="text-[10px] text-slate-400 font-light italic max-w-lg mx-auto leading-relaxed">
+                ⚠️ Bu mütalaa yapay zeka tarafından derlenmiştir. Karar numaralarını Yargıtay Bilgi İşlem sistemi üzerinden teyit etmeniz tavsiye edilir.
+              </p>
+            </div>
           </div>
         )}
 
