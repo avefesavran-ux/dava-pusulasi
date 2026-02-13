@@ -12,25 +12,30 @@ const SEARCH_SYSTEM_INSTRUCTION = `Sen, Türkiye Cumhuriyeti hukuk sistemine en 
 
 GÖREVİN: Kullanıcının uyuşmazlığını analiz etmek ve Google Search kullanarak bu olayla doğrudan bağlantılı, GÜNCEL Yargıtay, Danıştay veya AYM kararlarını bulup raporlamaktır.
 
-YANIT ŞABLONUN (BU FORMATI ASLA BOZMA, KARARLARI MUTLAKA LİSTELE):
+ÖNEMLİ KURALLAR:
+1. EMOJİ ASLA KULLANMA.
+2. KALINLAŞTIRMA İÇİN ** İŞARETİNİ ASLA KULLANMA.
+3. Önemli hukuki kavramları veya karardan doğrudan alıntıları mutlaka "tırnak içinde" yaz.
+4. Başlıkları tam olarak aşağıdaki gibi büyük harflerle kullan.
+5. Her bir emsal kararı TEK BİR BLOK halinde sun. Bir karara ait MAHKEME, ESAS/KARAR, TARİH ve ÖZET bilgilerini asla birbirinden ayırma, hepsini aynı kutuda toplanacak şekilde ardışık yaz.
 
-🎯 [UYUŞMAZLIĞIN HUKUKİ NİTELİĞİ]
-Olayın hukuki tanımı ve ihlal edilen/uygulanacak kanun maddelerini (Örn: TBK m. 347, HMK m. 107) belirt.
+YANIT ŞABLONUN:
 
-⚖️ [YERLEŞİK İÇTİHAT PRENSİBİ]
-Yüksek Mahkemelerin bu tür uyuşmazlıklardaki genel bakış açısını, yerleşik içtihatların temel mantığını özetle.
+UYUŞMAZLIĞIN HUKUKİ NİTELİĞİ
+Olayın hukuki tanımı ve uygulanacak kanun maddelerini paragraflar halinde açıkla.
 
-📌 [EMSAL KARAR ANALİZLERİ - BULGULAR VE EMSALLER]
-En az 2-3 adet somut karar bul ve şu alt başlıklarla sun:
-- MAHKEME/DAİRE: (Örn: Yargıtay 3. Hukuk Dairesi)
-- ESAS/KARAR: (Örn: E. 2023/1455 K. 2024/210)
-- KARAR TARİHİ: (Gün/Ay/Yıl formatında MUTLAKA belirt)
-- ÖZET: Kararın can alıcı kısmını, hakimi ikna edecek gerekçeyi ***kalın ve italik*** olarak yaz.
+YERLEŞİK İÇTİHAT PRENSİBİ
+Yüksek Mahkemelerin bu konudaki genel ve kökleşmiş görüşünü, doktrindeki eğilimi anlat. Önemli ilkeleri "tırnak içinde" belirt.
 
-⚠️ [USULİ VE KRİTİK UYARILAR]
-Zamanaşımı, zorunlu arabuluculuk, görevli mahkeme gibi usuli hataları önleyecek uyarıları ekle.
+EMSAL KARAR ANALİZLERİ
+Bulduğun her bir karar için şu yapıyı EKSİKSİZ kullan (Her karar MAHKEME ile başlamalıdır):
+MAHKEME: ... (Örn: Yargıtay 2. Hukuk Dairesi)
+ESAS/KARAR: ... (Örn: 2023/123 E. , 2024/456 K.)
+KARAR TARİHİ: ... (Örn: 15.01.2024)
+ÖZET VE GEREKÇE: ... (Kararın gerekçesini profesyonelce açıkla. Doğrudan alıntıları "tırnak içinde" yap.)
 
-KRİTİK KURAL: Eğer tam bir karar numarası bulamazsan, 'Şu tarihli ve şu dairenin kararları bu yöndedir' diyerek bulabildiğin tüm detayları (Yıl/Daire) ver. Karar kısmını asla boş bırakma.`;
+USULİ VE KRİTİK UYARILAR
+Zamanaşımı, hak düşürücü süreler, görevli mahkeme gibi hayati bilgileri paragraf olarak ver.`;
 
 const PETITION_GENERATOR_SYSTEM = `Sen, Türkiye Cumhuriyeti usul hukukuna hakim, uzman bir "Hukuki Argümantasyon" yapay zekasısın. 
 
@@ -105,7 +110,7 @@ const safelyParseJSON = (text: string | undefined, fallback: any) => {
 
 export const performSemanticSearch = async (query: string): Promise<string> => {
   const ai = getAIInstance();
-  const enhancedQuery = `Aşağıdaki uyuşmazlığa dair Google Search kullanarak gerçek Yargıtay/Danıştay kararlarını (Esas/Karar no ile) bul ve şablona uygun raporla: ${query}`;
+  const enhancedQuery = `Lütfen aşağıdaki uyuşmazlığa dair Google Search kullanarak en güncel Yargıtay/Danıştay kararlarını bul ve her bir kararı (Mahkeme, Esas, Tarih, Özet) eksiksiz bir blok halinde raporla: ${query}`;
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
@@ -115,7 +120,7 @@ export const performSemanticSearch = async (query: string): Promise<string> => {
       tools: [{ googleSearch: {} }]
     }
   });
-  return response.text || "İçtihat araması sonucunda somut bir metne ulaşılamadı. Lütfen aramayı detaylandırın.";
+  return response.text || "İçtihat araması sonucunda somut bir metne ulaşılamadı.";
 };
 
 export const generatePetition = async (params: {
