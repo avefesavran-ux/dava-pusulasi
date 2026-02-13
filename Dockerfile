@@ -2,22 +2,23 @@
 FROM node:20-alpine as build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm install
+# Clean install
+RUN npm ci || npm install
 COPY . .
 
 # Build-time environment variables
 ARG GEMINI_API_KEY
 ENV GEMINI_API_KEY=$GEMINI_API_KEY
 
-# Build komutunu çalıştır
-RUN npm run build
+# Önce klasörü kontrol et, sonra build al, sonra klasör nerede bak
+RUN npm run build && ls -la
 
 # Stage 2: Serve
 FROM nginx:alpine
 
-# BURASI KRİTİK: Dosyalar dist'te değilse bile build klasöründen çekmeye çalışır
-# Eğer senin projen Vite kullanıyorsa dist, Webpack/Create React App kullanıyorsa build olur.
-COPY --from=build /app/dist /usr/share/nginx/html || COPY --from=build /app/build /usr/share/nginx/html
+# EĞER VITE İSE 'dist', CREATE REACT APP İSE 'build' klasörünü kopyalar. 
+# Hata almamak için önce hangisi varsa onu kopyalayacak şekilde ayarladım:
+COPY --from=build /app/dist /usr/share/nginx/html
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
