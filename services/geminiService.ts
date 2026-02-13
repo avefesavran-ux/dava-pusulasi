@@ -105,6 +105,12 @@ export const parseDocument = async (file: File): Promise<string> => {
         } else if (extension === 'docx') {
           const result = await mammoth.extractRawText({ arrayBuffer });
           resolve(result.value);
+        } else if (extension === 'udf' || extension === 'xml') {
+          const decoder = new TextDecoder('utf-8'); // UDFs are typically UTF-8 XML
+          const text = decoder.decode(arrayBuffer);
+          // Basic XML text extraction (removes tags)
+          const cleanText = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+          resolve(cleanText);
         } else {
           resolve(new TextDecoder().decode(arrayBuffer));
         }
@@ -117,14 +123,14 @@ export const parseDocument = async (file: File): Promise<string> => {
 const safelyParseJSON = (text: string | undefined, fallback: any) => {
   if (!text) return fallback;
   let cleanText = text.replace(/```json|```/g, "").trim();
-  try { return JSON.parse(cleanText); } 
+  try { return JSON.parse(cleanText); }
   catch (e) { return fallback; }
 };
 
 export const performSemanticSearch = async (query: string): Promise<string> => {
   const ai = getAIInstance();
   const enhancedQuery = `Lütfen aşağıdaki uyuşmazlığa dair Google Search kullanarak en güncel Yargıtay/Danıştay kararlarını bul ve her bir kararı (Mahkeme, Esas, Tarih, Özet) eksiksiz bir blok halinde raporla: ${query}`;
-  
+
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: enhancedQuery,
@@ -141,10 +147,15 @@ export const generatePetitionStream = async (params: {
   target: string;
   summary: string;
   isLongMode: boolean;
+  fileContent?: string;
 }) => {
   const ai = getAIInstance();
-  const prompt = `Tür: ${params.type}, Makam: ${params.target}, Olay: ${params.summary}. ${params.isLongMode ? 'DETAYLI MOD: Konuyla ilgili Yargıtay ilamlarını ve hukuki gerekçeleri geniş tut.' : 'NORMAL MOD.'}`;
-  
+  let prompt = `Tür: ${params.type}, Makam: ${params.target}, Olay: ${params.summary}. ${params.isLongMode ? 'DETAYLI MOD: Konuyla ilgili Yargıtay ilamlarını ve hukuki gerekçeleri geniş tut.' : 'NORMAL MOD.'}`;
+
+  if (params.fileContent) {
+    prompt += `\n\nEK BAĞLAM DOSYASI (Bu dosyadaki hukuki verileri ve delilleri dilekçeye entegre et):\n${params.fileContent.substring(0, 20000)}`;
+  }
+
   return await ai.models.generateContentStream({
     model: 'gemini-3-pro-preview',
     contents: prompt,
