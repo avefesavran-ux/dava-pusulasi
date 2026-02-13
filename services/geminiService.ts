@@ -39,15 +39,20 @@ Zamanaşımı, hak düşürücü süreler, görevli mahkeme gibi hayati bilgiler
 
 const PETITION_GENERATOR_SYSTEM = `Sen, Türkiye Cumhuriyeti usul hukukuna hakim, uzman bir "Hukuki Argümantasyon" yapay zekasısın. 
 
-Dilekçeyi standart usul kurallarına uygun şu başlıklarla oluşturmalısın:
-- [GÖREVLİ MAHKEME BAŞLIĞI]
-- DAVACI / DAVALI BİLGİLERİ
-- KONU / DAVA DEĞERİ
-- AÇIKLAMALAR (Paragraf bazlı, net, hukuki illiyet bağı kurulmuş)
-- DELİLLER VE HUKUKİ NEDENLER
-- NETİCE-İ TALEP
+GÖREVİN: Profesyonel, ağır başlı ve hukuki terminolojiye uygun bir dilekçe oluşturmaktır.
 
-Usuli talepleri (faiz, vekalet ücreti, harç vb.) eklemeyi asla unutma.`;
+ÖNEMLİ KURALLAR:
+1. İÇTİHAT ŞARTI: Dilekçenin "AÇIKLAMALAR" veya "HUKUKİ NEDENLER" bölümüne mutlaka konuyla ilgili en az 1-2 adet güncel Yargıtay kararı (Esas ve Karar numarası belirterek) ekle. "Yargıtay ... Hukuk Dairesi'nin ... Esas, ... Karar sayılı ilamı uyarınca..." formatını kullan.
+2. FORMAT: KALINLAŞTIRMA İÇİN ** İŞARETİNİ KESİNLİKLE KULLANMA. Başlıkları sadece büyük harfle yaz (Örn: DAVACI:).
+3. YAPI: Yanıtına mutlaka "BASLIK:" ile başla ve içeriği "ICERIK:" etiketinden sonra ver.
+
+Dilekçe Yapısı:
+[MAHKEME BAŞLIĞI]
+DAVACI / DAVALI BİLGİLERİ
+KONU / DAVA DEĞERİ
+AÇIKLAMALAR (Hukuki dayanaklar ve Yargıtay atıfları burada yer almalı)
+DELİLLER VE HUKUKİ NEDENLER
+NETİCE-İ TALEP`;
 
 const PETITION_ANALYSIS_SYSTEM = `Sen, Türkiye Cumhuriyeti hukukuna hakim kıdemli bir Dava Stratejistisin. 
 Sana sunulan metni şu başlıklarda analiz et:
@@ -123,31 +128,33 @@ export const performSemanticSearch = async (query: string): Promise<string> => {
   return response.text || "İçtihat araması sonucunda somut bir metne ulaşılamadı.";
 };
 
-export const generatePetition = async (params: {
+export const generatePetitionStream = async (params: {
   type: string;
   target: string;
   summary: string;
   isLongMode: boolean;
-}): Promise<GeneratedPetition> => {
+}) => {
   const ai = getAIInstance();
-  const prompt = `Tür: ${params.type}, Makam: ${params.target}, Olay: ${params.summary}. ${params.isLongMode ? 'UZUN MOD.' : 'NORMAL MOD.'}`;
-  const response = await ai.models.generateContent({
+  const prompt = `Tür: ${params.type}, Makam: ${params.target}, Olay: ${params.summary}. ${params.isLongMode ? 'DETAYLI MOD: Konuyla ilgili Yargıtay ilamlarını ve hukuki gerekçeleri geniş tut.' : 'NORMAL MOD.'}`;
+  
+  return await ai.models.generateContentStream({
     model: 'gemini-3-pro-preview',
     contents: prompt,
     config: {
       systemInstruction: PETITION_GENERATOR_SYSTEM,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          title: { type: Type.STRING },
-          content: { type: Type.STRING },
-          version: { type: Type.STRING }
-        }
-      }
     }
   });
-  return safelyParseJSON(response.text, { title: "", content: "", version: "v1" });
+};
+
+export const revisePetitionStream = async (current: GeneratedPetition, instruction: string) => {
+  const ai = getAIInstance();
+  return await ai.models.generateContentStream({
+    model: 'gemini-3-pro-preview',
+    contents: `Mevcut Dilekçe: ${current.content}\n\nRevizyon Talimatı: ${instruction}\n\nLütfen dilekçeyi bu yönde güncelle.`,
+    config: {
+      systemInstruction: PETITION_GENERATOR_SYSTEM,
+    }
+  });
 };
 
 export const analyzePetition = async (content: string): Promise<string> => {
@@ -185,18 +192,4 @@ export const convertFile = async (content: string, from: string, to: string): Pr
     }
   });
   return safelyParseJSON(response.text, { status: 'failed', udf_data: {}, confidence_score: 0, output_text: "" });
-};
-
-export const revisePetition = async (current: GeneratedPetition, instruction: string): Promise<GeneratedPetition> => {
-  const ai = getAIInstance();
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
-    contents: `Dilekçe: ${current.content}\nTalimat: ${instruction}`,
-    config: {
-      systemInstruction: PETITION_GENERATOR_SYSTEM,
-      responseMimeType: "application/json"
-    }
-  });
-  const data = safelyParseJSON(response.text, current);
-  return { ...data, version: `v${parseInt(current.version.replace('v', '')) + 1}` };
 };
