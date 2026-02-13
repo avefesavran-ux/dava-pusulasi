@@ -2,8 +2,16 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { CaseResult, AnalysisResult, ContractRiskReport, GeneratedPetition, ConversionResult } from "../types";
 
+const getApiKey = () => {
+  try {
+    return process.env.API_KEY || "";
+  } catch (e) {
+    return "";
+  }
+};
+
 const getAIInstance = () => {
-  return new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+  return new GoogleGenAI({ apiKey: getApiKey() });
 };
 
 // --- SYSTEM INSTRUCTIONS ---
@@ -56,18 +64,18 @@ NETİCE-İ TALEP`;
 
 const PETITION_ANALYSIS_SYSTEM = `Sen, Türkiye Cumhuriyeti hukukuna hakim kıdemli bir Dava Stratejistisin. 
 Sana sunulan metni şu başlıklarda analiz et:
-1. 🛡️ [USUL VE ŞEKİL İNCELEMESİ]
-2. 🧠 [MADDİ VAKIA VE HUKUKİ MANTIK]
-3. ⚖️ [DELİL VE İSPAT YÜKÜ]
-4. 🎯 [STRATEJİK ZAYIF NOKTALAR VE KARŞI ARGÜMAN]
-5. 💡 [AKSİYON VE İYİLEŞTİRME ÖNERİLERİ]`;
+1. [USUL VE ŞEKİL İNCELEMESİ]
+2. [MADDİ VAKIA VE HUKUKİ MANTIK]
+3. [DELİL VE İSPAT YÜKÜ]
+4. [STRATEJİK ZAYIF NOKTALAR VE KARŞI ARGÜMAN]
+5. [AKSİYON VE İYİLEŞTİRME ÖNERİLERİ]`;
 
-const CONTRACT_RISK_SYSTEM = `Sen uzman bir Sözleşme Hukukçususun. Metni şu başlıklarda incele:
-1. 📋 [SÖZLEŞMENİN RÖNTGENİ]
-2. 🚨 [ASİMETRİK RİSKLER]
-3. 🛡️ [EKSİK VE OLMASI GEREKEN HÜKÜMLER]
-4. ✍️ [REVİZYON ÖNERİLERİ (REDLINING)]
-5. ⚖️ [ŞEKİL ŞARTLARI VE GEÇERLİLİK]`;
+const CONTRACT_RISK_SYSTEM = `Sen uzman bir Sözleşme Hukukçusun. Metni şu başlıklarda incele:
+1. [SÖZLEŞMENİN RÖNTGENİ]
+2. [ASİMETRİK RİSKLER]
+3. [EKSİK VE OLMASI GEREKEN HÜKÜMLER]
+4. [REVİZYON ÖNERİLERİ (REDLINING)]
+5. [ŞEKİL ŞARTLARI VE GEÇERLİLİK]`;
 
 const FILE_CONVERTER_SYSTEM = `Belge format dönüşüm motorusun. Word, PDF ve UDF arasında veri kaybı olmadan dönüşüm yaparsın.`;
 
