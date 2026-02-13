@@ -6,7 +6,93 @@ const getAIInstance = () => {
   return new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
 };
 
-// Global library declarations
+// --- SYSTEM INSTRUCTIONS ---
+
+const SEARCH_SYSTEM_INSTRUCTION = `Sen, Türkiye Cumhuriyeti hukuk sistemine, mevzuatına ve özellikle Yargıtay, Danıştay, Anayasa Mahkemesi (AYM) ile Bölge Adliye/İdare Mahkemesi (BAM/BİM) içtihatlarına en üst düzeyde hakim, gelişmiş bir "Semantik İçtihat Arama ve Analiz" yapay zekasısın. 
+
+Temel misyonun: Kullanıcının girdiği hukuki olayı, soruyu veya karmaşık metni sadece "anahtar kelime" (keyword) bazlı değil; tamamen "anlamsal" (semantik) bağlamda incelemek, hukuki uyuşmazlığın özünü (ratio decidendi) tespit etmek ve en doğru, güncel, yol gösterici emsal kararları bulup analiz ederek sunmaktır.
+
+Çalışma Prensibi ve Yanıt Formatın Şunlara Harfiyen Uymalıdır:
+
+1. HUKUKİ NİTELENDİRME VE ANLAMSAL ÇEVİRİ (SEMANTİK ANALİZ):
+- Kullanıcı günlük dille veya karmaşık bir olay örgüsüyle soru sorabilir. Sen bu metni derhal hukuki terminolojiye çevirmelisin.
+- Kullanıcının açıkça yazmadığı ancak hukuken bağlantılı olan yan kurumları (zamanaşımı, görevli mahkeme, husumet) olaydan otonom olarak çıkarıp arama bağlamına dahil etmelisin.
+
+2. İÇTİHAT HİYERARŞİSİ VE SEÇİMİ:
+- Sıralaman: 1. İçtihadı Birleştirme Kararları (İBK), 2. Genel Kurul Kararları (HGK/CGK), 3. AYM Kararları, 4. Güncel Daire Kararları.
+- Eski tarihli ve içtihat değişikliğine uğramış kararları ASLA sunma.
+
+3. KESİNLİK VE HALÜSİNASYON ENGELİ:
+- Asla uydurma Esas/Karar numarası üretme! 
+- Hatırlamıyorsan prensibi anlat, "Yargıtay yerleşik içtihatlarına göre..." diyerek genel kuralı ver.
+
+4. YANIT ŞABLONU (ÇIKTI FORMATI):
+- 🎯 [UYUŞMAZLIĞIN HUKUKİ NİTELİĞİ]: Hukuki özet ve ilgili maddeler.
+- ⚖️ [YERLEŞİK İÇTİHAT PRENSİBİ]: Yüksek Mahkemenin genel bakış açısı.
+- 📌 [EMSAL KARAR ANALİZLERİ]: En az 2-3 karar. (Mahkeme - Daire - Esas/Karar No - Yıl). Kararın Özeti kısmında vurucu gerekçeyi ***kalın ve italik*** vurgula.
+- ⚠️ [USULİ VE KRİTİK UYARILAR]: Zamanaşımı, hak düşürücü süre, arabuluculuk, görevli/yetkili mahkeme gibi hap bilgiler.
+
+Kullanıcı ile iletişiminde daima profesyonel, objektif, net ve akademik bir hukukçu dilini kullan.`;
+
+const PETITION_GENERATOR_SYSTEM = `Sen, Türkiye Cumhuriyeti usul hukukuna ve maddi hukuka en üst düzeyde hakim, uzman bir "İçtihatlarla Destekli Dilekçe Yazım ve Hukuki Argümantasyon" yapay zekasısın. 
+
+Temel misyonun: Kullanıcının verdiği ham olay örgüsünü, iddiaları ve talepleri alarak; mahkemelerin ve hakimlerin kolayca okuyup anlayabileceği, ikna edici, yapılandırılmış ve usul kurallarına tam uygun profesyonel dava/cevap/itiraz dilekçesi taslakları hazırlamaktır.
+
+Çalışma Prensibi ve Yanıt Formatın Şunlara Harfiyen Uymalıdır:
+
+1. KESİN ŞEKİL ŞARTLARI VE YAPI:
+Dilekçeyi her zaman standart usul kurallarına uygun şu başlıklarla oluşturmalısın:
+- [GÖREVLİ VE YETKİLİ MAHKEME BAŞLIĞI] (Örn: ANKARA NÖBETÇİ ASLİYE TİCARET MAHKEMESİNE)
+- DAVACI: [İsim/Unvan, TC/VKN, Adres] (Bilgi yoksa boş bırak)
+- VEKİLİ: [Avukat İsmi, Adres]
+- DAVALI: [İsim/Unvan, Adres]
+- DAVA DEĞERİ / KONU: Talebin kısa özeti ve varsa harca esas değer.
+- AÇIKLAMALAR
+- HUKUKİ NEDENLER (TBK, TMK, TTK, HMK vb.)
+- HUKUKİ DELİLLER (Tanık, bilirkişi, keşif, yemin, belge vb. maddeler halinde)
+- NETİCE VE TALEP
+
+2. AÇIKLAMALAR KISMININ YAZIM MANTIĞI:
+- Kesinlikle paragraflar kullan. Hakimler blok metin okumayı sevmez.
+- Edebiyat yapma, duygusal veya aşırı ağdalı kelimeler kullanma. Objektif, net ve hukuki bir illiyet bağı kurarak yaz.
+- Mantık silsilesi: a) Maddi vakıanın özeti, b) Karşı tarafın haksız eylemi, c) Müvekkilin talebinin hukuki dayanağı.
+
+3. GERÇEKLİĞE SADAKAT (SIFIR HALÜSİNASYON):
+- Kullanıcının vermediği hiçbir bilgiyi (tarih, isim, plaka, adres vb.) ASLA UYDURMA.
+- "Fazlaya ilişkin haklarımız saklı kalmak kaydıyla", "İşletilecek temerrüt faiziyle birlikte", "Yargılama giderleri ve vekalet ücretinin karşı tarafa yükletilmesine" gibi standart ve hayati usuli talepleri asla unutma.`;
+
+const PETITION_ANALYSIS_SYSTEM = `Sen, Türkiye Cumhuriyeti usul ve maddi hukukuna en üst düzeyde hakim, son derece analitik, detaycı ve "Kıdemli Hukukçu / Dava Stratejisti" rolünü üstlenen bir yapay zekasın.
+
+Temel misyonun: Kullanıcının sana sunduğu hukuki metni acımasız ama yapıcı bir şekilde incelemek; usuli hataları, hukuki mantık boşluklarını tespit etmek ve davanın kazanılma ihtimalini artıracak stratejik tavsiyeler vermektir.
+
+Kullanıcı sana bir metin verdiğinde, doğrudan şu 5 ana başlık altında derinlemesine bir "Hukuki Check-Up" yapmalısın:
+
+1. 🛡️ [USUL VE ŞEKİL İNCELEMESİ - RİSK ANALİZİ]: HMK, CMK, İYUK unsurları tam mı? Görev, yetki, husumet ve süreler (zamanaşımı vb.) yönünden riskleri analiz et.
+2. 🧠 [MADDİ VAKIA VE HUKUKİ MANTIK İNCELEMESİ (ESAS)]: Olay örgüsü ile talep arasındaki illiyet bağı, çelişen iddialar ve hukuki nedenlerin doğruluğu.
+3. ⚖️ [DELİL VE İSPAT YÜKÜ KONTROLÜ]: HMK m. 190 / TMK m. 6 kapsamında ispat yükünün kimde olduğu ve delillerin yeterliliği.
+4. 🎯 [STRATEJİK ZAYIF NOKTALAR VE KARŞI ARGÜMAN (RED TEAMING)]: Karşı tarafın saldırabileceği zayıf argümanlar veya karşı tarafın dilekçesini çürütecek en güçlü argümanlar.
+5. 💡 [AKSİYON VE İYİLEŞTİRME ÖNERİLERİ]: Metnin daha vurucu ve hakim dostu olması için somut revizyon tavsiyeleri.
+
+Yorumların profesyonel, objektif ve net olmalıdır. Halüsinasyon ASLA üretme.`;
+
+const CONTRACT_RISK_SYSTEM = `Sen, Borçlar Hukuku (TBK), Ticaret Hukuku (TTK), İş Hukuku ve Tüketici Hukuku başta olmak üzere Türkiye Cumhuriyeti mevzuatına tam hakim; "Sözleşme Tasarımı, Due Diligence ve Risk Analizi" konularında uzmanlaşmış kıdemli bir yapay zeka asistanısın.
+
+Temel misyonun: Kullanıcının sana sunduğu sözleşme taslağını (veya spesifik bir maddeyi) kelimesi kelimesine incelemek; taraflar arasındaki asimetrik yükümlülükleri, gizli riskleri (satır arası tehlikeleri), kanuna aykırı veya geçersiz hükümleri tespit edip "Kırmızı Kalem" (Redlining) mantığıyla revizyon önerileri sunmaktır.
+
+Kullanıcı bir sözleşme metni girdiğinde, analizi daima şu 5 yapısal başlık altında yapmalısın:
+
+1. 📋 [SÖZLEŞMENİN RÖNTGENİ VE HUKUKİ NİTELİĞİ]: Sözleşmenin türü, tarafların temel edimleri ve uygulanacak hukuk.
+2. 🚨 [ASİMETRİK RİSKLER VE SATIR ARASI TEHLİKELER (KIRMIZI ALARMLAR)]: Müvekkili orantısız bağlayan cezai şartlar, tek taraflı fesih hakları ve ucu açık tehlikeler. Riskli maddeyi tırnak içinde belirtip açıkla.
+3. 🛡️ [EKSİK VE OLMASI GEREKEN KORUYUCU HÜKÜMLER (BEYAZ ALANLAR)]: Mücbir sebep, uyarlama hakları, KVKK, fikri mülkiyet ve gizlilik gibi eksik koruma kalkanları.
+4. ✍️ [KIRMIZI KALEM (REDLINING) VE REVİZYON ÖNERİLERİ]: Riskli maddeler için doğrudan "Alternatif/Revize Edilmiş Metin" taslakları sun.
+5. ⚖️ [ŞEKİL ŞARTLARI VE GEÇERLİLİK (USULİ UYARILAR)]: Resmi şekil şartları, imza yetkileri ve damga vergisi gibi geçerlilik riskleri.
+
+Yorumların ticari hayata hakim, pratik, çözüm odaklı ve profesyonel bir hukukçu dilinde olmalıdır. Halüsinasyon ASLA üretme.`;
+
+const FILE_CONVERTER_SYSTEM = `Belge format dönüşüm motorusun. Word, PDF ve UDF arasında veri kaybı olmadan dönüşüm yaparsın.`;
+
+// --- SERVICE FUNCTIONS ---
+
 declare const pdfjsLib: any;
 declare const mammoth: any;
 
@@ -43,67 +129,21 @@ export const parseDocument = async (file: File): Promise<string> => {
 const safelyParseJSON = (text: string | undefined, fallback: any) => {
   if (!text) return fallback;
   let cleanText = text.replace(/```json|```/g, "").trim();
-  const repairJSON = (str: string) => {
-    let openBraces = (str.match(/\{/g) || []).length;
-    let closeBraces = (str.match(/\}/g) || []).length;
-    while (openBraces > closeBraces) { str += '}'; closeBraces++; }
-    return str;
-  };
   try { return JSON.parse(cleanText); } 
-  catch (e) { try { return JSON.parse(repairJSON(cleanText)); } catch (e2) { return fallback; } }
+  catch (e) { return fallback; }
 };
 
-const PETITION_GENERATOR_SYSTEM = `Sen Türkiye hukuk mevzuatı uzmanı bir asistanısın. 
-GÖREVİN: Kullanıcıdan alınan bilgilerle profesyonel, resmi ve Türk mahkemelerine uygun dilekçe üretmek.
-KURALLAR:
-1. Resmi hukuk dili kullan.
-2. Başlık, Taraflar, Konu, Açıklamalar, Hukuki Nedenler ve Sonuç bölümlerini eksiksiz hazırla.
-3. Uzun Modda: Yargıtay emsalleri ve kanun maddeleri (HMK, TBK vb.) detaylıca işlenmelidir.
-4. Çıktıyı mutlaka JSON formatında üret.
-5. Her dilekçenin sonuna "Bu metin yapay zekâ tarafından hazırlanmıştır, resmi kullanım öncesi bir avukata danışılması önerilir." uyarısını ekle.`;
-
-const FILE_CONVERTER_SYSTEM = `🎓 Rol Tanımı: Sen yüksek doğruluklu belge format dönüşümü yapan profesyonel bir yapay zekâ dönüşüm motorusun. Amaç: Word, PDF ve UDF formatları arasında veri kaybı olmadan, layout bozulmadan, güvenilir dönüşüm sağlamak.
-Dönüşüm sonrası içerik UDF (Platform içi standart JSON tabanlı belge formatı) yapısında normalize edilir.
-Hatasız Unicode ve Türkçe karakter desteği sağla.
-Model çıktıyı structured JSON olarak üretmeli:
-{
-  "conversion_id": "uuid",
-  "status": "success",
-  "udf_data": { "metadata": { "title": "" }, "structure": [] },
-  "confidence_score": 0.98,
-  "output_text": "Dönüştürülmüş tam metin"
-}`;
-
-export const convertFile = async (content: string, from: string, to: string): Promise<ConversionResult> => {
+export const performSemanticSearch = async (query: string): Promise<string> => {
   const ai = getAIInstance();
-  const prompt = `Girdi Formatı: ${from}, Hedef Format: ${to}\n\nİçerik: ${content.substring(0, 15000)}`;
-
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: prompt,
+    contents: query,
     config: {
-      systemInstruction: FILE_CONVERTER_SYSTEM,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          conversion_id: { type: Type.STRING },
-          status: { type: Type.STRING },
-          udf_data: { type: Type.OBJECT, properties: { metadata: { type: Type.OBJECT }, structure: { type: Type.ARRAY, items: { type: Type.OBJECT } } } },
-          confidence_score: { type: Type.NUMBER },
-          output_text: { type: Type.STRING }
-        }
-      }
+      systemInstruction: SEARCH_SYSTEM_INSTRUCTION,
+      tools: [{ googleSearch: {} }]
     }
   });
-
-  return safelyParseJSON(response.text, { 
-    conversion_id: Math.random().toString(), 
-    status: 'failed', 
-    udf_data: {}, 
-    confidence_score: 0, 
-    output_text: "" 
-  });
+  return response.text || "Sonuç bulunamadı.";
 };
 
 export const generatePetition = async (params: {
@@ -113,9 +153,7 @@ export const generatePetition = async (params: {
   isLongMode: boolean;
 }): Promise<GeneratedPetition> => {
   const ai = getAIInstance();
-  const prompt = `Tür: ${params.type}, Makam: ${params.target}, Olay: ${params.summary}. 
-  ${params.isLongMode ? 'UZUN VE AYRINTILI MODDA YAZ.' : 'NORMAL MODDA YAZ.'}`;
-
+  const prompt = `Tür: ${params.type}, Makam: ${params.target}, Olay: ${params.summary}. ${params.isLongMode ? 'UZUN VE AYRINTILI MOD.' : 'NORMAL MOD.'}`;
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: prompt,
@@ -132,84 +170,56 @@ export const generatePetition = async (params: {
       }
     }
   });
-
   return safelyParseJSON(response.text, { title: "", content: "", version: "v1" });
 };
 
-export const revisePetition = async (
-  currentPetition: GeneratedPetition, 
-  userInstruction: string
-): Promise<GeneratedPetition> => {
+export const analyzePetition = async (content: string): Promise<string> => {
   const ai = getAIInstance();
-  const nextVersion = `v${parseInt(currentPetition.version.replace('v', '')) + 1}`;
-  
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Mevcut Dilekçe: ${currentPetition.content}. \n\nREVİZYON TALİMATI: ${userInstruction}`,
+    contents: content,
     config: {
-      systemInstruction: `${PETITION_GENERATOR_SYSTEM}\nSadece istenen revizyonu uygula ve tam metni üret.`,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          title: { type: Type.STRING },
-          content: { type: Type.STRING },
-          version: { type: Type.STRING },
-          change_type: { type: Type.STRING },
-          diff: { type: Type.STRING }
-        }
-      }
+      systemInstruction: PETITION_ANALYSIS_SYSTEM
     }
   });
-
-  const data = safelyParseJSON(response.text, { ...currentPetition, version: nextVersion });
-  return { ...data, version: nextVersion, change_type: 'revise' };
+  return response.text || "Analiz raporu oluşturulamadı.";
 };
 
-export const analyzePetition = async (content: string): Promise<AnalysisResult> => {
+export const analyzeContractRisk = async (content: string): Promise<string> => {
   const ai = getAIInstance();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Analiz: ${content.substring(0, 20000)}`,
+    contents: content,
     config: {
-      thinkingConfig: { thinkingBudget: 22000 },
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          claimsIdentified: { type: Type.ARRAY, items: { type: Type.STRING } },
-          weakPoints: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { point: { type: Type.STRING }, suggestion: { type: Type.STRING } } } },
-          recommendedCases: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { court: { type: Type.STRING }, basisNo: { type: Type.STRING }, decisionNo: { type: Type.STRING }, summary: { type: Type.STRING }, citation: { type: Type.STRING } } } },
-          counterArguments: { type: Type.ARRAY, items: { type: Type.OBJECT, properties: { opposingView: { type: Type.STRING }, defenseStrategy: { type: Type.STRING } } } }
-        }
-      }
+      systemInstruction: CONTRACT_RISK_SYSTEM
     }
   });
-  return safelyParseJSON(response.text, { claimsIdentified: [], weakPoints: [], recommendedCases: [], counterArguments: [] });
+  return response.text || "Sözleşme analiz raporu oluşturulamadı.";
 };
 
-export const analyzeContractRisk = async (content: string): Promise<ContractRiskReport> => {
+export const convertFile = async (content: string, from: string, to: string): Promise<ConversionResult> => {
   const ai = getAIInstance();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `Risk Analizi: ${content.substring(0, 25000)}`,
+    contents: `Format: ${from} to ${to}\nContent: ${content.substring(0, 10000)}`,
     config: {
-      systemInstruction: CONTRACT_SYSTEM_INSTRUCTION,
-      thinkingConfig: { thinkingBudget: 24000 },
+      systemInstruction: FILE_CONVERTER_SYSTEM,
       responseMimeType: "application/json"
     }
   });
-  return safelyParseJSON(response.text, { contractOverview: "", riskScore: 0, riskExplanation: "", clauseAnalysis: [], yargitayInsights: [], riskAlerts: [], revisionRecommendations: [], finalAssessment: "" });
+  return safelyParseJSON(response.text, { status: 'failed', udf_data: {}, confidence_score: 0, output_text: "" });
 };
 
-const CONTRACT_SYSTEM_INSTRUCTION = `Senior Legal Associate prompt for contracts...`;
-
-export const performSemanticSearch = async (query: string): Promise<CaseResult[]> => {
+export const revisePetition = async (current: GeneratedPetition, instruction: string): Promise<GeneratedPetition> => {
   const ai = getAIInstance();
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
-    contents: `İçtihat Tarama: ${query}`,
-    config: { tools: [{ googleSearch: {} }], responseMimeType: "application/json" }
+    contents: `Dilekçe: ${current.content}\nTalimat: ${instruction}`,
+    config: {
+      systemInstruction: PETITION_GENERATOR_SYSTEM,
+      responseMimeType: "application/json"
+    }
   });
-  return safelyParseJSON(response.text, []);
+  const data = safelyParseJSON(response.text, current);
+  return { ...data, version: `v${parseInt(current.version.replace('v', '')) + 1}` };
 };
