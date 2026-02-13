@@ -1,6 +1,7 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
 import { CaseResult, AnalysisResult, ContractRiskReport, GeneratedPetition, ConversionResult } from "../types";
+import JSZip from 'jszip';
 
 const getApiKey = () => {
   try {
@@ -106,6 +107,22 @@ export const parseDocument = async (file: File): Promise<string> => {
           const result = await mammoth.extractRawText({ arrayBuffer });
           resolve(result.value);
         } else if (extension === 'udf' || extension === 'xml') {
+          try {
+            // First try as a ZIP (UDFs are zipped XMLs sometimes)
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            const xmlFile = Object.keys(zip.files).find(name => name.endsWith('.xml') || name.endsWith('content.xml'));
+            if (xmlFile) {
+              const xmlContent = await zip.file(xmlFile)?.async("string");
+              if (xmlContent) {
+                const cleanText = xmlContent.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+                resolve(cleanText);
+                return;
+              }
+            }
+          } catch (zipError) {
+            // Not a zip, proceed as plain XML/UDF
+          }
+
           const decoder = new TextDecoder('utf-8'); // UDFs are typically UTF-8 XML
           const text = decoder.decode(arrayBuffer);
           // Basic XML text extraction (removes tags)
@@ -132,7 +149,7 @@ export const performSemanticSearch = async (query: string): Promise<string> => {
   const enhancedQuery = `Lütfen aşağıdaki uyuşmazlığa dair Google Search kullanarak en güncel Yargıtay/Danıştay kararlarını bul ve her bir kararı (Mahkeme, Esas, Tarih, Özet) eksiksiz bir blok halinde raporla: ${query}`;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash-exp', // Updated model for search capability
     contents: enhancedQuery,
     config: {
       systemInstruction: SEARCH_SYSTEM_INSTRUCTION,
@@ -148,16 +165,22 @@ export const generatePetitionStream = async (params: {
   summary: string;
   isLongMode: boolean;
   fileContent?: string;
+  caseLawContext?: string;
 }) => {
   const ai = getAIInstance();
   let prompt = `Tür: ${params.type}, Makam: ${params.target}, Olay: ${params.summary}. ${params.isLongMode ? 'DETAYLI MOD: Konuyla ilgili Yargıtay ilamlarını ve hukuki gerekçeleri geniş tut.' : 'NORMAL MOD.'}`;
+
+  if (params.caseLawContext) {
+    prompt += `\n\nENTEGRE EDİLECEK GÜNCEL İÇTİHAT BİLGİSİ (Arama Sonuçları):\n${params.caseLawContext}`;
+    prompt += `\n\nYukarıdaki içtihat bilgisini kullanarak dilekçeyi güçlendir. Kararları atıf yaparak kullan.`;
+  }
 
   if (params.fileContent) {
     prompt += `\n\nEK BAĞLAM DOSYASI (Bu dosyadaki hukuki verileri ve delilleri dilekçeye entegre et):\n${params.fileContent.substring(0, 20000)}`;
   }
 
   return await ai.models.generateContentStream({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash-exp',
     contents: prompt,
     config: {
       systemInstruction: PETITION_GENERATOR_SYSTEM,
@@ -168,7 +191,7 @@ export const generatePetitionStream = async (params: {
 export const revisePetitionStream = async (current: GeneratedPetition, instruction: string) => {
   const ai = getAIInstance();
   return await ai.models.generateContentStream({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash-exp',
     contents: `Mevcut Dilekçe: ${current.content}\n\nRevizyon Talimatı: ${instruction}\n\nLütfen dilekçeyi bu yönde güncelle.`,
     config: {
       systemInstruction: PETITION_GENERATOR_SYSTEM,
@@ -179,7 +202,7 @@ export const revisePetitionStream = async (current: GeneratedPetition, instructi
 export const analyzePetition = async (content: string): Promise<string> => {
   const ai = getAIInstance();
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash-exp',
     contents: content,
     config: {
       systemInstruction: PETITION_ANALYSIS_SYSTEM
@@ -191,7 +214,7 @@ export const analyzePetition = async (content: string): Promise<string> => {
 export const analyzeContractRisk = async (content: string): Promise<string> => {
   const ai = getAIInstance();
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash-exp',
     contents: content,
     config: {
       systemInstruction: CONTRACT_RISK_SYSTEM
@@ -203,7 +226,7 @@ export const analyzeContractRisk = async (content: string): Promise<string> => {
 export const convertFile = async (content: string, from: string, to: string): Promise<ConversionResult> => {
   const ai = getAIInstance();
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-2.0-flash-exp',
     contents: `Format: ${from} to ${to}\nContent: ${content.substring(0, 10000)}`,
     config: {
       systemInstruction: FILE_CONVERTER_SYSTEM,
