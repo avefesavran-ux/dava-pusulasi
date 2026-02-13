@@ -123,19 +123,47 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
       setIsStreaming(true);
       startSmoothTyping();
 
-      const stream = await generatePetitionStream({
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("İşlem zaman aşımına uğradı (60s). Lütfen tekrar deneyin.")), 60000);
+      });
+
+      const streamPromise = generatePetitionStream({
         ...formData,
         fileContent: attachedFile?.content,
         caseLawContext: caseLawContext
       });
-      for await (const chunk of stream) {
-        pendingTextRef.current += chunk.text || "";
+
+      // Use a type assertion or just let inference work, but cast to any if needed to avoid complex type issues with Promise.race
+      const stream = await Promise.race([streamPromise, timeoutPromise]) as any;
+
+      console.log("Stream started");
+      let chunkCount = 0;
+      for await (const chunk of stream.stream) { // verify if stream is direct iterable or has .stream property
+        chunkCount++;
+        const chunkText = chunk.text || "";
+        console.log("Chunk received:", chunkText);
+        pendingTextRef.current += chunkText || "";
       }
+      console.log("Stream finished, total chunks:", chunkCount);
+
+      if (chunkCount === 0) {
+        throw new Error("Stream returned no data");
+      }
+
       streamFinishedRef.current = true;
       deductCredit(15);
     } catch (err) {
-      console.error("Generation error:", err);
-      setError('Dilekçe oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+      console.error("Generation error details:", err);
+      // Enhanced error message for user
+      let userMessage = 'Dilekçe oluşturulurken bir hata oluştu.';
+      if (err instanceof Error) {
+        if (err.message.includes('400')) userMessage += ' (Geçersiz istek)';
+        else if (err.message.includes('401')) userMessage += ' (Yetkilendirme hatası)';
+        else if (err.message.includes('429')) userMessage += ' (Çok fazla istek)';
+        else if (err.message.includes('500')) userMessage += ' (Sunucu hatası)';
+        else userMessage += ` (${err.message})`;
+      }
+      setError(userMessage);
       setIsStreaming(false);
       setLoading(false);
       setLoadingStep('');
