@@ -84,7 +84,7 @@ export interface ForumPost {
   category: string;
 }
 
-export type AppTab = 'search' | 'petition-analysis' | 'contract-analysis' | 'petition-generator' | 'file-converter' | 'forum' | 'profile';
+export type AppTab = 'search' | 'petition-analysis' | 'contract-analysis' | 'petition-generator' | 'file-converter' | 'forum' | 'profile' | 'deadline-calendar';
 
 export interface UserCredits {
   remaining: number;
