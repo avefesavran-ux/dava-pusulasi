@@ -10,7 +10,6 @@ import PricingModal from './components/PricingModal';
 import LoginModal from './components/LoginModal';
 import ProfileComponent from './components/ProfileComponent';
 import DeadlineCalendar from './components/DeadlineCalendar';
-import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { AppTab, UserProfile } from './types';
 
 const App: React.FC = () => {
@@ -93,7 +92,6 @@ const App: React.FC = () => {
       </Layout>
       <PricingModal isOpen={isPricingOpen} onClose={() => setIsPricingOpen(false)} />
       <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} onLogin={handleLogin} />
-      <PWAInstallPrompt />
     </>
   );
 };
