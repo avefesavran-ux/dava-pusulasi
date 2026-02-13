@@ -104,29 +104,29 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div className="space-y-1">
                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">Makam</span>
-                          <p className="text-sm font-bold text-slate-900 dark:text-luxury-silver uppercase">{mahkeme || 'Yargıtay İlgili Dairesi'}</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-luxury-silver uppercase transition-colors">{mahkeme || 'Yargıtay İlgili Dairesi'}</p>
                         </div>
                         <div className="space-y-1">
                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">Dosya No</span>
-                          <p className="text-sm font-bold text-slate-900 dark:text-luxury-silver">{esas || 'Emsal Veri'}</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-luxury-silver transition-colors">{esas || 'Emsal Veri'}</p>
                         </div>
                         <div className="space-y-1">
                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">İlam Tarihi</span>
-                          <p className="text-sm font-bold text-slate-900 dark:text-luxury-silver">{tarih || 'Güncel'}</p>
+                          <p className="text-sm font-bold text-slate-900 dark:text-luxury-silver transition-colors">{tarih || 'Güncel'}</p>
                         </div>
                       </div>
 
-                      <div className="pt-8 border-t border-slate-50 dark:border-slate-800/60">
+                      <div className="pt-8 border-t border-slate-50 dark:border-slate-800/60 transition-colors">
                         <div className="flex justify-between items-center mb-6">
                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">Karar Gerekçesi</span>
                           <button 
                             onClick={() => copyToClipboard(ozet)}
-                            className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-luxury-steel hover:text-[#C5A059] transition-colors"
+                            className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-luxury-silver hover:text-[#C5A059] transition-colors"
                           >
                             Metne Aktar
                           </button>
                         </div>
-                        <p className="font-serif text-xl lg:text-2xl text-slate-800 dark:text-luxury-silver leading-[1.8] text-justify font-light">
+                        <p className="font-serif text-xl lg:text-2xl text-slate-800 dark:text-luxury-silver leading-[1.8] text-justify font-light opacity-90 transition-colors">
                           {formatTextWithItalics(ozet.trim())}
                         </p>
                       </div>
@@ -145,7 +145,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
             {section.title}
           </h3>
           <div className="luxury-card p-12 lg:p-16 rounded-[4rem] bg-[#FDFCFB]/50 dark:bg-[#080C14] border border-slate-100/50 dark:border-slate-800 transition-colors">
-            <div className="text-lg lg:text-xl text-slate-700 dark:text-luxury-silver font-light leading-[2.1] whitespace-pre-wrap text-justify selection:bg-[#C5A059]/20">
+            <div className="text-lg lg:text-xl text-slate-700 dark:text-luxury-silver font-light leading-[2.1] whitespace-pre-wrap text-justify selection:bg-[#C5A059]/20 opacity-90 transition-colors">
               {formatTextWithItalics(section.content)}
             </div>
           </div>
@@ -160,24 +160,24 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
         <h2 className="text-5xl lg:text-6xl font-serif font-light text-slate-900 dark:text-luxury-silver mb-8 leading-tight transition-colors duration-700">
           Akıllı <span className="italic text-[#C5A059]">Semantik Tarama</span> Arşivi.
         </h2>
-        <p className="text-lg lg:text-xl text-slate-500 dark:text-luxury-steel font-light max-w-2xl mx-auto">
+        <p className="text-lg lg:text-xl text-slate-500 dark:text-luxury-silver opacity-60 font-light max-w-2xl mx-auto transition-colors">
           Derin hukuk analizi ve gümüş-gri netliğinde raporlama.
         </p>
       </div>
 
       <div className="max-w-6xl mx-auto">
-        <div className="luxury-card rounded-[3.5rem] p-1.5 bg-white dark:bg-[#080C14] shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-700 ring-1 ring-slate-50 dark:ring-slate-800 relative overflow-hidden mb-12">
+        <div className="luxury-card rounded-[3.5rem] p-1.5 bg-white dark:bg-[#112244] shadow-2xl shadow-slate-200/50 dark:shadow-none transition-all duration-700 ring-1 ring-slate-50 dark:ring-slate-800 relative overflow-hidden mb-12 border border-slate-100 dark:border-slate-800">
           <div className="absolute top-0 right-0 w-48 h-48 bg-[#C5A059]/5 rounded-full -mr-24 -mt-24 blur-3xl"></div>
           <form onSubmit={handleSearch} className="relative z-10">
             <textarea
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Olayı, hukuki düğümü ve aranacak emsalleri anlatın..."
-              className="w-full p-12 pr-12 rounded-[3.3rem] bg-transparent dark:bg-[#0B162E] focus:outline-none min-h-[220px] text-xl font-light placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-all border-none resize-none leading-relaxed text-slate-900 dark:text-luxury-silver"
+              className="w-full p-12 pr-12 rounded-[3.3rem] bg-transparent dark:bg-transparent focus:outline-none min-h-[220px] text-xl font-light placeholder:text-slate-300 dark:placeholder:text-luxury-silver/20 transition-all border-none resize-none leading-relaxed text-slate-900 dark:text-luxury-silver"
             />
-            <div className="p-8 pt-0 flex justify-between items-center mt-4">
+            <div className="p-8 pt-0 flex justify-between items-center mt-6">
                <div className="flex gap-4">
-                  <span className="flex items-center gap-2 text-[10px] uppercase font-black text-slate-300 dark:text-luxury-steel tracking-[0.2em]">
+                  <span className="flex items-center gap-2 text-[10px] uppercase font-black text-slate-300 dark:text-luxury-silver/40 tracking-[0.2em] transition-colors">
                     <span className={`w-1.5 h-1.5 rounded-full ${loading ? 'bg-[#C5A059] animate-ping' : 'bg-emerald-400'}`}></span>
                     {loading ? 'Yargıtay Arşivi Taranıyor...' : 'Motor Aktif'}
                   </span>
@@ -185,7 +185,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
                <button
                  type="submit"
                  disabled={loading || !query.trim()}
-                 className="px-14 py-5 bg-slate-900 dark:bg-luxury-navy text-white border border-[#C5A059]/40 font-black rounded-2xl shadow-2xl hover:bg-[#C5A059] transition-all duration-500 disabled:opacity-40 text-[11px] tracking-[0.2em] uppercase active:scale-95"
+                 className="px-16 py-6 bg-slate-900 dark:bg-luxury-charcoal text-white border border-[#C5A059] font-black rounded-2xl shadow-2xl hover:bg-[#C5A059] transition-all duration-500 disabled:opacity-40 text-[12px] tracking-[0.2em] uppercase active:scale-95 opacity-100"
                >
                  <span>Aramayı Başlat (2 Kredi)</span>
                </button>
@@ -195,8 +195,8 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
 
         {report && (
           <div className="space-y-24 reveal mt-12 transition-colors duration-700">
-            <div className="flex items-center justify-between px-8 border-b border-slate-100 dark:border-slate-800 pb-10">
-              <h3 className="text-[11px] uppercase tracking-[0.6em] font-black text-slate-900 dark:text-luxury-steel">Sorgu Analiz Raporu</h3>
+            <div className="flex items-center justify-between px-8 border-b border-slate-100 dark:border-slate-800 pb-10 transition-colors">
+              <h3 className="text-[11px] uppercase tracking-[0.6em] font-black text-slate-900 dark:text-luxury-silver transition-colors">Sorgu Analiz Raporu</h3>
               <button 
                 onClick={() => copyToClipboard()}
                 className="flex items-center gap-3 text-[10px] uppercase font-bold text-[#C5A059] hover:text-slate-900 dark:hover:text-luxury-silver transition-colors tracking-widest"
@@ -213,7 +213,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
         {loading && (
           <div className="text-center py-24">
             <div className="w-16 h-16 border-[3px] border-[#C5A059] border-t-transparent rounded-full mx-auto mb-10 animate-spin"></div>
-            <p className="font-serif italic text-3xl text-slate-400 dark:text-luxury-steel">Derin içtihat taraması yürütülüyor...</p>
+            <p className="font-serif italic text-3xl text-slate-400 dark:text-luxury-silver transition-colors">Derin içtihat taraması yürütülüyor...</p>
           </div>
         )}
       </div>
