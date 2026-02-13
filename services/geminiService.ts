@@ -147,6 +147,7 @@ const safelyParseJSON = (text: string | undefined, fallback: any) => {
 export const performSemanticSearch = async (query: string): Promise<string> => {
   const ai = getAIInstance();
   const enhancedQuery = `Lütfen aşağıdaki uyuşmazlığa dair Google Search kullanarak en güncel Yargıtay/Danıştay kararlarını bul ve her bir kararı (Mahkeme, Esas, Tarih, Özet) eksiksiz bir blok halinde raporla: ${query}`;
+  console.log("Performing search with query:", enhancedQuery);
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.0-flash-exp', // Updated model for search capability
@@ -156,6 +157,7 @@ export const performSemanticSearch = async (query: string): Promise<string> => {
       tools: [{ googleSearch: {} }]
     }
   });
+  console.log("Search response:", response.text);
   return response.text || "İçtihat araması sonucunda somut bir metne ulaşılamadı.";
 };
 
@@ -178,6 +180,8 @@ export const generatePetitionStream = async (params: {
   if (params.fileContent) {
     prompt += `\n\nEK BAĞLAM DOSYASI (Bu dosyadaki hukuki verileri ve delilleri dilekçeye entegre et):\n${params.fileContent.substring(0, 20000)}`;
   }
+
+  console.log("Generating petition with prompt length:", prompt.length);
 
   return await ai.models.generateContentStream({
     model: 'gemini-2.0-flash-exp',
