@@ -186,13 +186,13 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
       if (isHeader) {
         return (
           <div key={idx} className="mt-10 mb-5">
-            <strong className="text-slate-900 dark:text-luxury-silver font-black text-lg lg:text-xl tracking-tight border-b-2 border-[#C5A059]/30 pb-2 inline-block min-w-[220px] uppercase">
+            <strong className="text-slate-900 dark:text-luxury-silver font-black text-lg lg:text-xl tracking-tight border-b-2 border-[#C5A059]/30 pb-2 inline-block min-w-[220px] uppercase transition-colors">
               {line}
             </strong>
           </div>
         );
       }
-      return <div key={idx} className="mb-3 text-slate-700 dark:text-luxury-silver font-light leading-[1.95]">{line}</div>;
+      return <div key={idx} className="mb-3 text-slate-700 dark:text-luxury-silver font-light leading-[1.95] transition-colors">{line}</div>;
     });
   };
 
@@ -204,7 +204,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
         <h2 className="text-5xl lg:text-6xl font-serif font-light text-slate-900 dark:text-luxury-silver mb-8 leading-tight transition-colors duration-700">
           Akıllı <span className="italic text-[#C5A059]">Dilekçe</span> Yazım Mühendisliği.
         </h2>
-        <p className="text-lg text-slate-500 dark:text-luxury-steel font-light">En güncel Yargıtay içtihatlarıyla harmanlanmış, gümüş-gri netliğinde profesyonel taslaklar.</p>
+        <p className="text-lg text-slate-500 dark:text-luxury-silver opacity-60 font-light transition-colors">En güncel Yargıtay içtihatlarıyla harmanlanmış, gümüş-gri netliğinde profesyonel taslaklar.</p>
       </header>
 
       {(!currentPetition && !isStreaming) ? (
@@ -213,7 +213,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
             <div className="space-y-3">
               <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">Dilekçe Türü</label>
               <select 
-                className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800 text-slate-700 dark:text-luxury-silver font-medium focus:ring-1 focus:ring-[#C5A059]/30"
+                className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800 text-slate-700 dark:text-luxury-silver font-medium focus:ring-1 focus:ring-[#C5A059]/30 transition-colors"
                 value={formData.type}
                 onChange={e => setFormData({...formData, type: e.target.value})}
               >
@@ -229,7 +229,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
               <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">Sunulacak Makam</label>
               <input 
                 placeholder="Örn: Ankara 12. Asliye Hukuk Mahkemesi"
-                className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-luxury-silver font-medium"
+                className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-luxury-silver font-medium transition-colors"
                 value={formData.target}
                 onChange={e => setFormData({...formData, target: e.target.value})}
               />
@@ -240,7 +240,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
             <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">Olay Özeti ve Talepler</label>
             <textarea 
               placeholder="Uyuşmazlığı ve içtihat istediğiniz noktaları gümüş-gri netliğinde anlatın..."
-              className="w-full p-8 rounded-3xl bg-slate-50 dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-luxury-silver min-h-[220px] resize-none font-light leading-relaxed"
+              className="w-full p-8 rounded-3xl bg-slate-50 dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-luxury-silver min-h-[220px] resize-none font-light leading-relaxed transition-colors"
               value={formData.summary}
               onChange={e => setFormData({...formData, summary: e.target.value})}
             />
@@ -256,9 +256,9 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                   onChange={e => setFormData({...formData, isLongMode: e.target.checked})}
                 />
                 <div className="w-14 h-7 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:bg-[#C5A059] transition-all duration-500"></div>
-                <div className="absolute left-1 top-1 bg-white dark:bg-luxury-silver w-5 h-5 rounded-full transition-all duration-500 peer-checked:translate-x-7"></div>
+                <div className="absolute left-1 top-1 bg-white dark:bg-luxury-silver w-5 h-5 rounded-full transition-all duration-500 peer-checked:translate-x-7 shadow-sm"></div>
               </div>
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-luxury-steel group-hover:text-slate-900 dark:group-hover:text-luxury-silver transition-colors">İçtihat Entegreli Mod</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-luxury-silver opacity-60 group-hover:text-slate-900 dark:group-hover:text-luxury-silver transition-all">İçtihat Entegreli Mod</span>
             </label>
             <button 
               onClick={handleGenerate}
@@ -278,7 +278,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                     <span className="text-[10px] font-black bg-[#C5A059] text-white px-5 py-2 rounded-full uppercase tracking-widest animate-pulse">
                       {isStreaming ? 'STREAMING' : currentPetition?.version}
                     </span>
-                    <h3 className="font-serif italic text-2xl text-slate-900 dark:text-luxury-silver">
+                    <h3 className="font-serif italic text-2xl text-slate-900 dark:text-luxury-silver transition-colors">
                       {isStreaming ? 'İçtihatlar Yazılıyor...' : currentPetition?.title}
                     </h3>
                   </div>
@@ -304,8 +304,8 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                   )}
                </div>
                
-               <div ref={scrollRef} className="p-16 lg:p-24 relative min-h-[600px] max-h-[900px] overflow-y-auto custom-scrollbar bg-white dark:bg-[#060A10]">
-                  <div className="font-serif text-xl leading-[1.95] text-slate-800 dark:text-luxury-silver selection:bg-[#C5A059]/30">
+               <div ref={scrollRef} className="p-16 lg:p-24 relative min-h-[600px] max-h-[900px] overflow-y-auto custom-scrollbar bg-white dark:bg-[#060A10] transition-colors">
+                  <div className="font-serif text-xl leading-[1.95] text-slate-800 dark:text-luxury-silver selection:bg-[#C5A059]/30 transition-colors">
                     {renderFormattedContent(displayContent)}
                     {isStreaming && (
                       <span className="inline-block w-2.5 h-6 ml-1 bg-[#C5A059] animate-pulse align-middle"></span>
@@ -313,8 +313,8 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                   </div>
                   
                   {!isStreaming && (
-                    <div className="mt-20 pt-10 border-t border-slate-50 dark:border-slate-800/50">
-                      <p className="text-[10px] text-slate-400 dark:text-luxury-steel font-light italic text-center max-w-lg mx-auto leading-relaxed">
+                    <div className="mt-20 pt-10 border-t border-slate-50 dark:border-slate-800/50 transition-colors">
+                      <p className="text-[10px] text-slate-400 dark:text-luxury-silver opacity-40 font-light italic text-center max-w-lg mx-auto leading-relaxed transition-colors">
                         ⚠️ Bu taslak yapay zekâ tarafından en güncel Yargıtay içtihatları taranarak hazırlanmıştır.
                       </p>
                     </div>
@@ -334,16 +334,16 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                     className={`w-full p-5 rounded-2xl flex items-center justify-between transition-all duration-500 border ${
                       activeIndex === i 
                       ? 'bg-slate-900 dark:bg-luxury-charcoal text-white border-slate-900 dark:border-[#C5A059]/40 shadow-xl' 
-                      : 'bg-slate-50 dark:bg-luxury-midnight text-slate-400 dark:text-luxury-steel border-slate-100 dark:border-slate-800 hover:text-slate-900 dark:hover:text-luxury-silver'
+                      : 'bg-slate-50 dark:bg-luxury-midnight text-slate-400 dark:text-luxury-silver opacity-60 border-slate-100 dark:border-slate-800 hover:text-slate-900 dark:hover:text-luxury-silver'
                     }`}
                   >
                     <div className="flex items-center gap-4">
                       <span className={`text-[10px] font-black w-8 h-8 rounded-full flex items-center justify-center ${
-                        activeIndex === i ? 'bg-[#C5A059] text-white' : 'bg-white dark:bg-luxury-charcoal text-slate-300 dark:text-luxury-steel border border-slate-100 dark:border-slate-800'
+                        activeIndex === i ? 'bg-[#C5A059] text-white' : 'bg-white dark:bg-luxury-charcoal text-slate-300 dark:text-luxury-silver border border-slate-100 dark:border-slate-800 transition-colors'
                       }`}>
                         {i + 1}
                       </span>
-                      <span className="text-xs font-bold tracking-widest uppercase">{p.version}</span>
+                      <span className="text-xs font-bold tracking-widest uppercase transition-colors">{p.version}</span>
                     </div>
                   </button>
                 ))}
@@ -352,7 +352,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
 
             <div className={`luxury-card p-10 rounded-[3.5rem] bg-slate-900 dark:bg-luxury-charcoal text-white border border-[#C5A059]/20 sticky top-32 transition-all duration-700 ${isStreaming ? 'opacity-30 pointer-events-none grayscale' : 'shadow-2xl shadow-black/40'}`}>
                <h4 className="text-xl font-serif italic text-[#C5A059] mb-8">İnteraktif Revizyon</h4>
-               <p className="text-xs text-slate-400 dark:text-luxury-steel font-light mb-8">
+               <p className="text-xs text-slate-400 dark:text-luxury-silver opacity-40 font-light mb-8 transition-colors">
                  {history.length === 1 ? (
                    <span className="text-emerald-400 font-bold uppercase tracking-widest flex items-center gap-2">
                      <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></span>
@@ -366,7 +366,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                <div className="space-y-6">
                   <textarea 
                     placeholder="Örn: 'Karşı tarafın itirazlarına daha sert cevap ver'..."
-                    className="w-full p-6 rounded-2xl bg-white/5 dark:bg-luxury-midnight border border-white/10 dark:border-slate-800 focus:ring-[#C5A059] min-h-[140px] text-sm font-light text-slate-300 dark:text-luxury-silver resize-none transition-all placeholder:text-slate-600"
+                    className="w-full p-6 rounded-2xl bg-white/5 dark:bg-luxury-midnight border border-white/10 dark:border-slate-800 focus:ring-[#C5A059] min-h-[140px] text-sm font-light text-slate-300 dark:text-luxury-silver transition-colors resize-none placeholder:text-slate-600"
                     value={revisionText}
                     onChange={e => setRevisionText(e.target.value)}
                   />
