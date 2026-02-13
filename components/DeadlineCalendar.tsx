@@ -100,10 +100,10 @@ const DeadlineCalendar: React.FC = () => {
   return (
     <div className="space-y-16 reveal pb-32 max-w-6xl mx-auto">
       <div className="text-center max-w-4xl mx-auto px-4">
-        <h2 className="text-5xl lg:text-6xl font-serif font-light text-slate-900 mb-8 leading-tight">
-          Süreli İş <span className="italic text-[#C5A059]">Takvimi</span> ve Hesaplayıcı.
+        <h2 className="text-5xl lg:text-6xl font-serif font-light text-slate-900 dark:text-luxury-silver mb-8 leading-tight">
+          <span className="text-[#C5A059]">Süreli İş Takvimi</span> ve <span className="dark:text-luxury-silver">Hesaplayıcı</span>.
         </h2>
-        <p className="text-lg text-slate-500 font-light">
+        <p className="text-lg text-slate-500 dark:text-luxury-steel font-light">
           HMK, CMK ve İYUK uyarınca tebliğ ve kesinleşme sürelerini adli tatil ve resmi tatil parametreleriyle hatasız hesaplayın.
         </p>
       </div>
@@ -111,12 +111,12 @@ const DeadlineCalendar: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         {/* Input Panel */}
         <div className="lg:col-span-5 space-y-8">
-          <div className="luxury-card rounded-[3.5rem] p-10 lg:p-12 bg-white border border-slate-50 space-y-10">
+          <div className="luxury-card rounded-[3.5rem] p-10 lg:p-12 bg-white dark:bg-luxury-charcoal border border-slate-50 dark:border-slate-800 space-y-10">
             <div className="space-y-4">
               <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">Tebliğ / Karar Tarihi</label>
               <input 
                 type="date"
-                className="w-full p-5 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-1 focus:ring-[#C5A059]/30 text-slate-700 font-medium"
+                className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-midnight border border-slate-100 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C5A059]/30 text-slate-700 dark:text-luxury-silver font-medium"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
@@ -127,7 +127,7 @@ const DeadlineCalendar: React.FC = () => {
                 <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">Süre Miktarı</label>
                 <input 
                   type="number"
-                  className="w-full p-5 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-1 focus:ring-[#C5A059]/30"
+                  className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-midnight border border-slate-100 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C5A059]/30 text-slate-900 dark:text-luxury-silver"
                   value={durationValue}
                   onChange={(e) => setDurationValue(parseInt(e.target.value) || 0)}
                 />
@@ -135,7 +135,7 @@ const DeadlineCalendar: React.FC = () => {
               <div className="space-y-4">
                 <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">Birim</label>
                 <select 
-                  className="w-full p-5 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-1 focus:ring-[#C5A059]/30"
+                  className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-midnight border border-slate-100 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C5A059]/30 text-slate-900 dark:text-luxury-silver"
                   value={durationType}
                   onChange={(e) => setDurationType(e.target.value as any)}
                 >
@@ -155,19 +155,19 @@ const DeadlineCalendar: React.FC = () => {
                     checked={isJudicialHolidayExtension}
                     onChange={(e) => setIsJudicialHolidayExtension(e.target.checked)}
                   />
-                  <div className="w-12 h-6 bg-slate-100 rounded-full peer peer-checked:bg-[#C5A059] transition-all duration-500"></div>
+                  <div className="w-12 h-6 bg-slate-100 dark:bg-slate-800 rounded-full peer peer-checked:bg-[#C5A059] transition-all duration-500"></div>
                   <div className="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-all duration-500 peer-checked:translate-x-6 shadow-sm"></div>
                 </div>
-                <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500">Adli Tatil Uzatması Uygula</span>
+                <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-luxury-steel">Adli Tatil Uzatması</span>
               </label>
             </div>
 
-            <div className="pt-8 border-t border-slate-50 space-y-6">
+            <div className="pt-8 border-t border-slate-50 dark:border-slate-800 space-y-6">
               <div className="space-y-4">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">Ajandaya Kaydet (Opsiyonel)</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-[#C5A059]">Ajanda Kaydı</label>
                 <input 
-                  placeholder="Dosya Adı veya Not..."
-                  className="w-full p-5 rounded-2xl bg-slate-50 border border-slate-100 focus:outline-none focus:ring-1 focus:ring-[#C5A059]/30 text-sm"
+                  placeholder="Dosya Adı..."
+                  className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-midnight border border-slate-100 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-[#C5A059]/30 text-sm text-slate-900 dark:text-luxury-silver"
                   value={customTitle}
                   onChange={(e) => setCustomTitle(e.target.value)}
                 />
@@ -175,7 +175,7 @@ const DeadlineCalendar: React.FC = () => {
               <button 
                 onClick={saveDeadline}
                 disabled={!customTitle}
-                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-[#C5A059] transition-all disabled:opacity-20"
+                className="w-full py-4 bg-slate-900 dark:bg-luxury-midnight text-white border border-[#C5A059]/30 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-xl hover:bg-[#C5A059] transition-all disabled:opacity-20"
               >
                 Takvime Ekle
               </button>
@@ -185,34 +185,34 @@ const DeadlineCalendar: React.FC = () => {
 
         {/* Result Panel */}
         <div className="lg:col-span-7 space-y-10">
-          <div className="luxury-card rounded-[4rem] bg-white border border-[#C5A059]/20 p-12 lg:p-16 shadow-2xl relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-[#C5A059]/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+          <div className="luxury-card rounded-[4rem] bg-white dark:bg-luxury-charcoal border border-[#C5A059]/20 p-12 lg:p-16 shadow-2xl relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-64 h-64 bg-[#C5A059]/5 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
              
              <div className="relative z-10 text-center space-y-10">
                 <div>
                   <span className="text-[10px] font-black uppercase tracking-[0.5em] text-[#C5A059] mb-4 block">Hesaplanan Son Gün</span>
-                  <h3 className="text-4xl lg:text-5xl font-serif italic text-slate-900 leading-tight">
+                  <h3 className="text-4xl lg:text-5xl font-serif italic text-slate-900 dark:text-luxury-silver leading-tight">
                     {calculateDeadline.lastDay}
                   </h3>
                 </div>
 
                 <div className="space-y-4 max-w-md mx-auto">
                   {calculateDeadline.notes.map((note, idx) => (
-                    <div key={idx} className="flex items-start gap-4 text-left p-4 bg-slate-50 rounded-2xl">
+                    <div key={idx} className="flex items-start gap-4 text-left p-4 bg-slate-50 dark:bg-luxury-midnight rounded-2xl">
                       <svg className="w-5 h-5 text-[#C5A059] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                      <p className="text-xs text-slate-600 font-medium leading-relaxed">{note}</p>
+                      <p className="text-xs text-slate-600 dark:text-luxury-steel font-medium leading-relaxed">{note}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="pt-10 border-t border-slate-50 grid grid-cols-2 gap-8 text-center">
+                <div className="pt-10 border-t border-slate-50 dark:border-slate-800 grid grid-cols-2 gap-8 text-center">
                   <div className="space-y-1">
-                    <p className="text-[9px] uppercase font-bold text-slate-400">Tebliğ Tarihi</p>
-                    <p className="text-sm font-bold text-slate-900">{new Date(startDate).toLocaleDateString('tr-TR')}</p>
+                    <p className="text-[9px] uppercase font-bold text-slate-400 dark:text-luxury-steel">Tebliğ Tarihi</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-luxury-silver">{new Date(startDate).toLocaleDateString('tr-TR')}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[9px] uppercase font-bold text-slate-400">Süre Türü</p>
-                    <p className="text-sm font-bold text-slate-900">
+                    <p className="text-[9px] uppercase font-bold text-slate-400 dark:text-luxury-steel">Süre Türü</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-luxury-silver">
                       {durationValue} {durationType === 'day' ? 'Gün' : durationType === 'week' ? 'Hafta' : 'Ay'}
                     </p>
                   </div>
@@ -220,20 +220,20 @@ const DeadlineCalendar: React.FC = () => {
              </div>
           </div>
 
-          {/* Saved Deadlines List */}
+          {/* Saved Deadlines */}
           {savedDeadlines.length > 0 && (
-            <div className="luxury-card rounded-[3.5rem] p-10 bg-[#FDFCFB] border border-slate-100">
+            <div className="luxury-card rounded-[3.5rem] p-10 bg-[#FDFCFB] dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800">
               <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-[#C5A059] mb-8">Ajandamdaki Süreler</h4>
               <div className="space-y-4">
                 {savedDeadlines.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-6 bg-white border border-slate-50 rounded-[2rem] shadow-sm hover:border-[#C5A059]/30 transition-all group">
+                  <div key={idx} className="flex justify-between items-center p-6 bg-white dark:bg-luxury-midnight border border-slate-50 dark:border-slate-800 rounded-[2rem] shadow-sm hover:border-[#C5A059]/30 transition-all group">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest text-[#C5A059] mb-1">{item.title}</p>
-                      <p className="text-sm font-serif italic text-slate-700">{item.date}</p>
+                      <p className="text-sm font-serif italic text-slate-700 dark:text-luxury-silver">{item.date}</p>
                     </div>
                     <button 
                       onClick={() => setSavedDeadlines(savedDeadlines.filter((_, i) => i !== idx))}
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-slate-200 hover:text-red-400 transition-colors"
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-slate-200 dark:text-slate-700 hover:text-red-400 transition-colors"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
@@ -242,21 +242,6 @@ const DeadlineCalendar: React.FC = () => {
               </div>
             </div>
           )}
-
-          {/* Legal Quick Tips */}
-          <div className="bg-slate-900 rounded-[3rem] p-12 text-white/90">
-            <h4 className="text-xl font-serif italic text-[#C5A059] mb-8">Hukuki Notlar</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-              <div className="space-y-3">
-                <p className="text-[10px] uppercase font-black tracking-widest text-[#C5A059]">HMK m. 93</p>
-                <p className="text-xs font-light leading-relaxed">Sürenin son günü adli tatile rastlarsa, bu süre adli tatilin bittiği günden itibaren bir hafta uzatılmış sayılır (7 Eylül).</p>
-              </div>
-              <div className="space-y-3">
-                <p className="text-[10px] uppercase font-black tracking-widest text-[#C5A059]">HMK m. 92</p>
-                <p className="text-xs font-light leading-relaxed">Süreler gün olarak belirlenmişse tebliğ günü sayılmaz; süre ay veya yıl olarak belirlenmişse son ayın aynı gününde biter.</p>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
