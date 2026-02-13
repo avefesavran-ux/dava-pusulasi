@@ -150,7 +150,7 @@ export const performSemanticSearch = async (query: string): Promise<string> => {
   console.log("Performing search with query:", enhancedQuery);
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash-exp', // Updated model for search capability
+    model: 'gemini-3-pro-preview', // Updated model for search capability
     contents: enhancedQuery,
     config: {
       systemInstruction: SEARCH_SYSTEM_INSTRUCTION,
@@ -184,7 +184,7 @@ export const generatePetitionStream = async (params: {
   console.log("Generating petition with prompt length:", prompt.length);
 
   return await ai.models.generateContentStream({
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-3-pro-preview',
     contents: prompt,
     config: {
       systemInstruction: PETITION_GENERATOR_SYSTEM,
@@ -195,7 +195,7 @@ export const generatePetitionStream = async (params: {
 export const revisePetitionStream = async (current: GeneratedPetition, instruction: string) => {
   const ai = getAIInstance();
   return await ai.models.generateContentStream({
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-3-pro-preview',
     contents: `Mevcut Dilekçe: ${current.content}\n\nRevizyon Talimatı: ${instruction}\n\nLütfen dilekçeyi bu yönde güncelle.`,
     config: {
       systemInstruction: PETITION_GENERATOR_SYSTEM,
@@ -206,7 +206,7 @@ export const revisePetitionStream = async (current: GeneratedPetition, instructi
 export const analyzePetition = async (content: string): Promise<string> => {
   const ai = getAIInstance();
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-3-pro-preview',
     contents: content,
     config: {
       systemInstruction: PETITION_ANALYSIS_SYSTEM
@@ -218,7 +218,7 @@ export const analyzePetition = async (content: string): Promise<string> => {
 export const analyzeContractRisk = async (content: string): Promise<string> => {
   const ai = getAIInstance();
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-3-pro-preview',
     contents: content,
     config: {
       systemInstruction: CONTRACT_RISK_SYSTEM
@@ -230,7 +230,7 @@ export const analyzeContractRisk = async (content: string): Promise<string> => {
 export const convertFile = async (content: string, from: string, to: string): Promise<ConversionResult> => {
   const ai = getAIInstance();
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash-exp',
+    model: 'gemini-3-pro-preview',
     contents: `Format: ${from} to ${to}\nContent: ${content.substring(0, 10000)}`,
     config: {
       systemInstruction: FILE_CONVERTER_SYSTEM,
