@@ -17,13 +17,14 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) => {
       features: ['Günlük 30 kredi limiti', 'Semantik içtihat araması', 'Standart hızda analiz'],
       buttonText: 'Kullanıma Başla',
       isPopular: false,
+      onClick: onClose
     },
     {
-      name: 'Professional',
+      name: 'Profesyonel',
       price: '399₺',
       period: '/ay',
       description: 'Bağımsız vekiller için tam kapasite.',
-      features: ['Sınırsız derin sorgulama', 'Gelişmiş mühendislik analizi', 'Öncelikli GPU erişimi', 'Vektörel rapor çıktısı'],
+      features: ['Sınırsız derin sorgulama', 'Tam sürüm Analiz ve Dilekçe Hizmeti', 'Öncelikli GPU erişimi', 'Vektörel rapor çıktısı'],
       buttonText: 'Hemen Abone Ol',
       isPopular: true,
     },
@@ -32,7 +33,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) => {
       price: '1499₺',
       period: '/ay',
       description: 'Ekipler için ortak zeka alanı.',
-      features: ['10 Kullanıcıya kadar erişim', 'Kolektif vaka kütüphanesi', 'Kurumsal muhasebe desteği', 'API ve webhook entegrasyonu'],
+      features: ['10 Kullanıcıya kadar erişim', 'Kurumsal muhasebe desteği', 'API ve webhook entegrasyonu'],
       buttonText: 'Bize Ulaşın',
       isPopular: false,
     }
@@ -107,6 +108,7 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) => {
                 </ul>
 
                 <button 
+                  onClick={plan.onClick}
                   className={`w-full py-5 rounded-[2rem] font-bold text-[11px] uppercase tracking-[0.2em] transition-all duration-700 active:scale-95 ${
                     plan.isPopular 
                     ? 'bg-slate-900 text-white hover:bg-[#C5A059] shadow-2xl shadow-slate-900/10' 
