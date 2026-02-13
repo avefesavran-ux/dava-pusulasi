@@ -10,7 +10,7 @@ interface SearchComponentProps {
 const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, creditsRemaining }) => {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [report, setReport] = useState<string | null>(null);
+  const [report, setReport] = useState<string>('');
   const [error, setError] = useState('');
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -22,27 +22,33 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
     }
 
     setLoading(true);
-    setReport(null);
+    setReport('');
     setError('');
     
     try {
       const data = await performSemanticSearch(query);
-      if (!data || data.length < 50) {
-        throw new Error("Yetersiz sonuç.");
+      if (!data) {
+        throw new Error("Sonuç üretilemedi.");
       }
       setReport(data);
       deductCredit(2);
     } catch (err) {
-      setError('İçtihat veri tabanına erişilirken bir hata oluştu. Lütfen sorgunuzu biraz daha detaylandırarak tekrar deneyin.');
+      setError('İçtihat araması sırasında bir hata oluştu. Lütfen sorgunuzu detaylandırarak tekrar deneyin.');
     } finally {
       setLoading(false);
     }
   };
 
   const copyToClipboard = () => {
-    if (!report) return;
-    navigator.clipboard.writeText(report);
-    alert('İçtihat raporu panoya kopyalandı.');
+    if (!report || report.trim() === '') {
+      alert('Kopyalanacak bir içerik bulunmuyor.');
+      return;
+    }
+    // String olduğundan emin oluyoruz
+    const textToCopy = String(report);
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => alert('İçtihat raporu panoya kopyalandı.'))
+      .catch(() => alert('Kopyalama sırasında bir hata oluştu.'));
   };
 
   return (
@@ -53,7 +59,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
           Yapay Zeka Destekli <span className="italic text-[#C5A059]">Semantik İçtihat</span> Araması.
         </h2>
         <p className="text-lg lg:text-xl text-slate-500 font-light leading-relaxed max-w-2xl mx-auto">
-          Uyuşmazlığın özündeki hukuki mantığı analiz eder, Google Search ile güncel Yargıtay/Danıştay kararlarını tararız.
+          Uyuşmazlığın özündeki hukuki mantığı analiz eder, yüksek mahkeme kararlarını saniyeler içinde raporlarız.
         </p>
       </div>
 
@@ -65,7 +71,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
             <textarea
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Hukuki uyuşmazlığı, tarafları ve somut olayı anlatın... (Örn: Haksız tahliye nedeniyle tazminat davasında Yargıtay'ın güncel kira tespiti kriterleri nelerdir?)"
+              placeholder="Hukuki uyuşmazlığı, tarafları ve somut olayı anlatın... (Örn: İşçinin mesai saatleri içinde sosyal medya kullanımı nedeniyle haklı fesih kriterleri nelerdir?)"
               className="w-full p-12 pr-12 rounded-[3.3rem] bg-transparent focus:outline-none min-h-[200px] text-xl font-light placeholder:text-slate-300 transition-all border-none resize-none leading-relaxed"
             />
             <div className="p-8 pt-0 flex justify-between items-center">
@@ -101,45 +107,48 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
         {report && (
           <div className="space-y-12 reveal">
             <div className="flex items-center justify-between px-8">
-              <h3 className="text-[11px] uppercase tracking-[0.6em] font-black text-slate-900">🔍 Semantik İçtihat Raporu</h3>
+              <h3 className="text-[11px] uppercase tracking-[0.6em] font-black text-slate-900">🔍 Bulgular & Emsaller</h3>
               <button 
                 onClick={copyToClipboard}
-                className="text-[10px] uppercase font-bold text-[#C5A059] hover:underline tracking-widest"
+                className="flex items-center gap-3 text-[10px] uppercase font-bold text-[#C5A059] hover:text-slate-900 transition-colors tracking-widest"
               >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
                 Raporu Kopyala
               </button>
             </div>
 
-            <article className="luxury-card p-16 lg:p-24 rounded-[4rem] bg-white relative overflow-hidden">
+            <article className="luxury-card p-16 lg:p-24 rounded-[4rem] bg-white relative overflow-hidden border border-slate-50 shadow-2xl">
                <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 blur-3xl opacity-50"></div>
                <div className="relative z-10 prose prose-slate max-w-none">
-                  <div className="font-serif text-xl lg:text-2xl leading-[1.9] text-slate-800 whitespace-pre-wrap text-justify selection:bg-[#C5A059]/20">
+                  <div className="font-serif text-xl lg:text-2xl leading-[2] text-slate-800 whitespace-pre-wrap text-justify selection:bg-[#C5A059]/20">
                     {report}
                   </div>
                </div>
                
                <div className="mt-20 pt-10 border-t border-slate-50 text-center">
                   <p className="text-[10px] text-slate-400 font-light italic max-w-lg mx-auto leading-relaxed">
-                    ⚠️ Bu rapor yapay zeka tarafından Google Search verileri kullanılarak hazırlanmış bir ön mütalaadır. Karar numaralarını resmi kaynaklardan teyit etmeniz önerilir.
+                    ⚠️ Bu mütalaa yapay zeka tarafından Google Search verileriyle derlenmiştir. Karar numaralarını Yargıtay Bilgi İşlem sistemi üzerinden teyit etmeniz tavsiye edilir.
                   </p>
                </div>
             </article>
           </div>
         )}
 
-        {/* Loading State Overlay (Optional enhancement) */}
+        {/* Loading State Overlay */}
         {loading && (
-          <div className="text-center py-20 animate-pulse">
-            <div className="w-16 h-16 border-4 border-[#C5A059] border-t-transparent rounded-full mx-auto mb-8 animate-spin"></div>
-            <p className="font-serif italic text-2xl text-slate-400">Arşiv taranıyor, emsal kararlar analiz ediliyor...</p>
+          <div className="text-center py-24 animate-pulse">
+            <div className="w-20 h-20 border-[3px] border-[#C5A059] border-t-transparent rounded-full mx-auto mb-10 animate-spin"></div>
+            <p className="font-serif italic text-3xl text-slate-400">Yargı arşivi taranıyor, emsaller analiz ediliyor...</p>
           </div>
         )}
 
         {/* Placeholder / Empty State */}
         {!report && !loading && (
-          <div className="text-center py-20 opacity-20">
-            <svg className="w-20 h-20 mx-auto mb-6 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-            <p className="font-serif italic text-2xl">Yapay zeka asistanınız sorgunuzu bekliyor...</p>
+          <div className="text-center py-32 opacity-20">
+            <div className="w-24 h-24 border border-slate-200 rounded-full flex items-center justify-center mx-auto mb-10">
+              <svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+            </div>
+            <p className="font-serif italic text-3xl text-slate-400">Semantik asistanınız bir uyuşmazlık tanımı bekliyor...</p>
           </div>
         )}
       </div>
@@ -148,4 +157,3 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
 };
 
 export default SearchComponent;
-
