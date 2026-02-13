@@ -66,6 +66,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, cred
           { id: 'petition-generator', label: 'Dilekçe Yazımı', icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z' },
           { id: 'petition-analysis', label: 'Dilekçe Analizi', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' },
           { id: 'contract-analysis', label: 'Sözleşme Analizi', icon: 'M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0020 10c0-5.523-4.477-10-10-10S0 4.477 0 10c0 1.99.581 3.843 1.587 5.407' },
+          { id: 'deadline-calendar', label: 'Süreli İş Takvimi', icon: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' },
           { id: 'file-converter', label: 'Araçlar', icon: 'M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4' },
           { id: 'forum', label: 'Hukuk Forumu', icon: 'M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z' },
         ].map((tab) => (
@@ -153,7 +154,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, cred
             <div className="flex flex-col">
               <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-[#C5A059] mb-1">Dava Pusulası</span>
               <div className="text-lg font-serif italic font-medium text-slate-800">
-                {activeTab === 'search' ? 'Semantik İçtihat Araması' : activeTab === 'petition-analysis' ? 'Dilekçe Analiz Mühendisliği' : activeTab === 'contract-analysis' ? 'Sözleşme Risk Laboratuvarı' : activeTab === 'petition-generator' ? 'Akıllı Dilekçe Yazımı' : activeTab === 'file-converter' ? 'Dosya Dönüştürme Robotu' : activeTab === 'forum' ? 'Mesleki Paylaşım Forumu' : 'Kullanıcı Profili'}
+                {activeTab === 'search' ? 'Semantik İçtihat Araması' : activeTab === 'petition-analysis' ? 'Dilekçe Analiz Mühendisliği' : activeTab === 'contract-analysis' ? 'Sözleşme Risk Laboratuvarı' : activeTab === 'petition-generator' ? 'Akıllı Dilekçe Yazımı' : activeTab === 'file-converter' ? 'Dosya Dönüştürme Robotu' : activeTab === 'forum' ? 'Mesleki Paylaşım Forumu' : activeTab === 'deadline-calendar' ? 'Süreli İş Takvimi' : 'Kullanıcı Profili'}
               </div>
             </div>
           </div>
