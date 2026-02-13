@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { generatePetitionStream, revisePetitionStream, parseDocument } from '../services/geminiService';
+import { generatePetitionStream, revisePetitionStream, parseDocument, performSemanticSearch } from '../services/geminiService';
 import { GeneratedPetition } from '../types';
 
 interface PetitionGeneratorProps {
@@ -13,6 +13,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
   const [attachedFile, setAttachedFile] = useState<{ name: string, content: string } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState<string>('');
   const [history, setHistory] = useState<GeneratedPetition[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [revisionText, setRevisionText] = useState('');
@@ -89,6 +90,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
 
       setIsStreaming(false);
       setLoading(false);
+      setLoadingStep('');
       return "";
     });
   };
@@ -101,13 +103,30 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
     setStreamingText('');
     pendingTextRef.current = "";
     streamFinishedRef.current = false;
-    setIsStreaming(true);
-    startSmoothTyping();
 
     try {
+      let caseLawContext = "";
+
+      if (formData.isLongMode) {
+        setLoadingStep('İçtihatlar ve Emsal Kararlar Araştırılıyor...');
+        // Perform semantic search
+        try {
+          const searchResult = await performSemanticSearch(formData.summary);
+          caseLawContext = searchResult;
+        } catch (searchErr) {
+          console.error("Search error:", searchErr);
+          // Continue without search results if search fails, but maybe notify user?
+        }
+      }
+
+      setLoadingStep('Dilekçe Taslağı Oluşturuluyor...');
+      setIsStreaming(true);
+      startSmoothTyping();
+
       const stream = await generatePetitionStream({
         ...formData,
-        fileContent: attachedFile?.content
+        fileContent: attachedFile?.content,
+        caseLawContext: caseLawContext
       });
       for await (const chunk of stream) {
         pendingTextRef.current += chunk.text || "";
@@ -115,9 +134,11 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
       streamFinishedRef.current = true;
       deductCredit(15);
     } catch (err) {
-      setError('Dilekçe oluşturulurken bir hata oluştu.');
+      console.error("Generation error:", err);
+      setError('Dilekçe oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
       setIsStreaming(false);
       setLoading(false);
+      setLoadingStep('');
     }
   };
 
@@ -127,6 +148,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
     if (creditsRemaining < cost) { setError(`Revizyon için ${cost} kredi gereklidir.`); return; }
 
     setLoading(true);
+    setLoadingStep('Revizyon Uygulanıyor...');
     setError(null);
     setStreamingText('');
     pendingTextRef.current = "";
@@ -146,6 +168,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
       setError('Revizyon başarısız.');
       setIsStreaming(false);
       setLoading(false);
+      setLoadingStep('');
     }
   };
 
@@ -218,8 +241,8 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
           {/* File Upload Area */}
           <div
             className={`relative rounded-3xl border-2 border-dashed p-8 transition-all duration-300 ${isDragging
-                ? 'border-[#C5A059] bg-[#C5A059]/5'
-                : 'border-slate-200 dark:border-slate-700 hover:border-[#C5A059]/50'
+              ? 'border-[#C5A059] bg-[#C5A059]/5'
+              : 'border-slate-200 dark:border-slate-700 hover:border-[#C5A059]/50'
               }`}
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
@@ -343,7 +366,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
               disabled={loading || !formData.summary}
               className="px-12 py-5 bg-slate-900 dark:bg-luxury-charcoal text-white rounded-3xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-[#C5A059] transition-all duration-500 disabled:opacity-30 shadow-lg"
             >
-              {loading ? 'Dilekçe İnşa Ediliyor...' : 'Taslağı Oluştur (15 Kredi)'}
+              {loading ? (loadingStep || 'Dilekçe İnşa Ediliyor...') : 'Taslağı Oluştur (15 Kredi)'}
             </button>
           </div>
         </div>
@@ -365,8 +388,8 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                     <button
                       onClick={copyToClipboard}
                       className={`flex items-center gap-3 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all border ${copySuccess
-                          ? 'bg-emerald-500 border-emerald-500 text-white'
-                          : 'bg-white dark:bg-luxury-midnight border-slate-100 dark:border-slate-800 text-slate-600 dark:text-luxury-silver hover:border-[#C5A059]'
+                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                        : 'bg-white dark:bg-luxury-midnight border-slate-100 dark:border-slate-800 text-slate-600 dark:text-luxury-silver hover:border-[#C5A059]'
                         }`}
                     >
                       {copySuccess ? 'Kopyalandı' : 'Kopyala'}
@@ -409,8 +432,8 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                     key={i}
                     onClick={() => setActiveIndex(i)}
                     className={`w-full p-5 rounded-2xl flex items-center justify-between transition-all duration-500 border ${activeIndex === i
-                        ? 'bg-slate-900 dark:bg-luxury-charcoal text-white border-slate-900 dark:border-[#C5A059]/40 shadow-xl'
-                        : 'bg-slate-50 dark:bg-luxury-midnight text-slate-400 dark:text-luxury-silver opacity-60 border-slate-100 dark:border-slate-800 hover:text-slate-900 dark:hover:text-luxury-silver'
+                      ? 'bg-slate-900 dark:bg-luxury-charcoal text-white border-slate-900 dark:border-[#C5A059]/40 shadow-xl'
+                      : 'bg-slate-50 dark:bg-luxury-midnight text-slate-400 dark:text-luxury-silver opacity-60 border-slate-100 dark:border-slate-800 hover:text-slate-900 dark:hover:text-luxury-silver'
                       }`}
                   >
                     <div className="flex items-center gap-4">
