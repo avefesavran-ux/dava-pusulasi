@@ -5,11 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dava Pusulası | Yapay Zeka Destekli İçtihat ve Dilekçe Asistanı</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#000000">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="description" content="Avukatlar için geliştirilmiş, anlamsal sorgulama yapabilen, dilekçe analizi gerçekleştiren ve UDF desteği sunan yapay zeka tabanlı içtihat asistanı.">
+    <meta name="keywords" content="hukuk, avukat, yapay zeka, içtihat, emsal karar, dilekçe analizi, sözleşme inceleme, yargıtay kararları">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -74,15 +71,28 @@
           border-radius: 10px;
         }
 
-        /* Dark mode overrides */
+        /* Dark mode overrides - Karizmatik Gece */
         .dark body { background-color: #112244; color: #E2E8F0; }
         .dark .luxury-card { background: #080C14; border-color: rgba(197, 160, 89, 0.15); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        
         .dark input, .dark textarea, .dark select { 
           background-color: #0B162E !important; 
           color: #E2E8F0 !important; 
           border-color: rgba(197, 160, 89, 0.1) !important; 
         }
+        .dark input::placeholder, .dark textarea::placeholder { color: #475569 !important; }
+        
+        /* Smooth Typing Cursor */
+        .cursor-active::after {
+          content: '';
+          display: inline-block;
+          width: 2px;
+          height: 1.2em;
+          background-color: #C5A059;
+          margin-left: 2px;
+          vertical-align: middle;
+          animation: blink 0.8s infinite;
+        }
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
 <script type="importmap">
 {
@@ -97,15 +107,5 @@
 </head>
 <body class="overflow-x-hidden">
     <div id="root"></div>
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW Kayıt Başarılı:', reg))
-                    .catch(err => console.log('SW Kayıt Hatası:', err));
-            });
-        }
-    </script>
 </body>
 </html>
-
