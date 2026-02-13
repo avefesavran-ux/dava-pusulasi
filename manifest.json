@@ -1,0 +1,24 @@
+
+{
+  "name": "Dava Pusulası - Semantik İçtihat Uzmanı",
+  "short_name": "Pusula",
+  "description": "Yapay zeka destekli profesyonel hukuk asistanı ve içtihat uzmanı.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFCFB",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3222/3222625.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3222/3222625.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
