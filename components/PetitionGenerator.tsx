@@ -404,6 +404,12 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
             <p className="font-serif italic text-3xl text-slate-400 dark:text-luxury-silver transition-colors">Hukuki süreç yürütülüyor...</p>
           </div>
         )}
+        {error && (
+          <div className="max-w-4xl mx-auto mt-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl flex items-center gap-3 text-red-600 dark:text-red-400">
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <span className="text-sm font-medium">{error}</span>
+          </div>
+        )}
       </>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-[1600px] mx-auto">
