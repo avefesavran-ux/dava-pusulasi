@@ -64,7 +64,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
         const step = Math.max(1, Math.floor(pendingTextRef.current.length / 4));
         const chars = pendingTextRef.current.substring(0, step);
         pendingTextRef.current = pendingTextRef.current.substring(step);
-        setStreamingText(prev => prev + chars);
+        setStreamingText((prev: string) => prev + chars);
       } else if (streamFinishedRef.current) {
         window.clearInterval(displayIntervalRef.current!);
         displayIntervalRef.current = null;
@@ -74,7 +74,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
   }, []);
 
   const finishGeneration = () => {
-    setStreamingText(prev => {
+    setStreamingText((prev: string) => {
       const { title, content } = parseStreamingResponse(prev);
       const petition: GeneratedPetition = {
         title: title || "Dilekçe Taslağı",
@@ -82,7 +82,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
         version: history.length === 0 ? "v1" : `v${history.length + 1}`
       };
 
-      setHistory(prevHist => {
+      setHistory((prevHist: GeneratedPetition[]) => {
         const newHist = [...prevHist, petition];
         setActiveIndex(newHist.length - 1);
         return newHist;
@@ -113,7 +113,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
         try {
           const searchResult = await performSemanticSearch(formData.summary);
           caseLawContext = searchResult;
-        } catch (searchErr) {
+        } catch (searchErr: any) {
           console.error("Search error:", searchErr);
           // Continue without search results if search fails, but maybe notify user?
         }
@@ -152,7 +152,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
 
       streamFinishedRef.current = true;
       deductCredit(15);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Generation error details:", err);
       // Enhanced error message for user
       let userMessage = 'Dilekçe oluşturulurken bir hata oluştu.';
@@ -192,7 +192,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
       streamFinishedRef.current = true;
       setRevisionText('');
       if (cost > 0) deductCredit(cost);
-    } catch (err) {
+    } catch (err: any) {
       setError('Revizyon başarısız.');
       setIsStreaming(false);
       setLoading(false);
@@ -263,7 +263,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
         <p className="text-lg text-slate-500 dark:text-luxury-silver opacity-60 font-light transition-colors">En güncel Yargıtay içtihatlarıyla harmanlanmış, gümüş-gri netliğinde profesyonel taslaklar.</p>
       </header>
 
-      {(!currentPetition && !isStreaming) ? (
+      {(!currentPetition && !isStreaming) ? (<>
         <div className="max-w-4xl mx-auto luxury-card rounded-[4rem] p-16 bg-white dark:bg-luxury-midnight border border-slate-50 dark:border-slate-800/50 space-y-12 shadow-2xl transition-all duration-700">
 
           {/* File Upload Area */}
@@ -272,9 +272,9 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
               ? 'border-[#C5A059] bg-[#C5A059]/5'
               : 'border-slate-200 dark:border-slate-700 hover:border-[#C5A059]/50'
               }`}
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragOver={(e: React.DragEvent<HTMLDivElement>) => { e.preventDefault(); setIsDragging(true); }}
             onDragLeave={() => setIsDragging(false)}
-            onDrop={async (e) => {
+            onDrop={async (e: React.DragEvent<HTMLDivElement>) => {
               e.preventDefault();
               setIsDragging(false);
               const file = e.dataTransfer.files[0];
@@ -322,7 +322,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                   type="file"
                   className="hidden"
                   accept=".pdf,.docx,.udf,.xml"
-                  onChange={async (e) => {
+                  onChange={async (e: React.ChangeEvent<HTMLInputElement>) => {
                     const file = e.target.files?.[0];
                     if (file) {
                       try {
@@ -344,7 +344,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
               <select
                 className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800 text-slate-700 dark:text-luxury-silver font-medium focus:ring-1 focus:ring-[#C5A059]/30 transition-colors"
                 value={formData.type}
-                onChange={e => setFormData({ ...formData, type: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, type: e.target.value })}
               >
                 <option value="">Seçiniz...</option>
                 <option value="Dava Dilekçesi">Dava Dilekçesi</option>
@@ -360,7 +360,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                 placeholder="Örn: Ankara 12. Asliye Hukuk Mahkemesi"
                 className="w-full p-5 rounded-2xl bg-slate-50 dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-luxury-silver font-medium transition-colors"
                 value={formData.target}
-                onChange={e => setFormData({ ...formData, target: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, target: e.target.value })}
               />
             </div>
           </div>
@@ -371,7 +371,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
               placeholder="Uyuşmazlığı ve içtihat istediğiniz noktaları gümüş-gri netliğinde anlatın..."
               className="w-full p-8 rounded-3xl bg-slate-50 dark:bg-luxury-charcoal border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-luxury-silver min-h-[220px] resize-none font-light leading-relaxed transition-colors"
               value={formData.summary}
-              onChange={e => setFormData({ ...formData, summary: e.target.value })}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, summary: e.target.value })}
             />
           </div>
 
@@ -382,7 +382,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                   type="checkbox"
                   className="sr-only peer"
                   checked={formData.isLongMode}
-                  onChange={e => setFormData({ ...formData, isLongMode: e.target.checked })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, isLongMode: e.target.checked })}
                 />
                 <div className="w-14 h-7 bg-slate-200 dark:bg-slate-800 rounded-full peer peer-checked:bg-[#C5A059] transition-all duration-500"></div>
                 <div className="absolute left-1 top-1 bg-white dark:bg-luxury-silver w-5 h-5 rounded-full transition-all duration-500 peer-checked:translate-x-7 shadow-sm"></div>
@@ -398,6 +398,13 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
             </button>
           </div>
         </div>
+        {loading && (
+          <div className="text-center py-24">
+            <div className="w-16 h-16 border-[3px] border-[#C5A059] border-t-transparent rounded-full mx-auto mb-10 animate-spin"></div>
+            <p className="font-serif italic text-3xl text-slate-400 dark:text-luxury-silver transition-colors">Hukuki süreç yürütülüyor...</p>
+          </div>
+        )}
+      </>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 max-w-[1600px] mx-auto">
           <div className="lg:col-span-8 space-y-8">
@@ -494,7 +501,7 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
                   placeholder="Örn: 'Karşı tarafın itirazlarına daha sert cevap ver'..."
                   className="w-full p-6 rounded-2xl bg-white/5 dark:bg-luxury-midnight border border-white/10 dark:border-slate-800 focus:ring-[#C5A059] min-h-[140px] text-sm font-light text-slate-300 dark:text-luxury-silver transition-colors resize-none placeholder:text-slate-600"
                   value={revisionText}
-                  onChange={e => setRevisionText(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setRevisionText(e.target.value)}
                 />
                 <button
                   onClick={handleRevise}
