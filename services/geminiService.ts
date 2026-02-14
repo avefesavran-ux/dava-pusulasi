@@ -1,21 +1,21 @@
-
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { CaseResult, AnalysisResult, ContractRiskReport, GeneratedPetition, ConversionResult } from "../types";
 import JSZip from 'jszip';
 
 const getApiKey = () => {
   try {
-    return process.env.API_KEY || "";
+    // Vite projelerinde genelde import.meta.env kullanılır, 
+    // ama senin yapına sadık kalarak process.env bırakıyorum.
+    return process.env.GEMINI_API_KEY || process.env.API_KEY || "";
   } catch (e) {
     return "";
   }
 };
 
-const getAIInstance = () => {
-  return new GoogleGenAI({ apiKey: getApiKey() });
-};
+// Instance oluşturma mantığını SDK'ya uygun güncelledik
+const genAI = new GoogleGenerativeAI(getApiKey());
 
-// --- SYSTEM INSTRUCTIONS ---
+// --- SYSTEM INSTRUCTIONS (HİÇ DOKUNULMADI) ---
 
 const SEARCH_SYSTEM_INSTRUCTION = `Sen, Türkiye Cumhuriyeti hukuk sistemine en üst düzeyde hakim, uzman bir "Semantik İçtihat Uzmanı"sın. 
 
@@ -80,7 +80,7 @@ const CONTRACT_RISK_SYSTEM = `Sen uzman bir Sözleşme Hukukçusun. Metni şu ba
 
 const FILE_CONVERTER_SYSTEM = `Belge format dönüşüm motorusun. Word, PDF ve UDF arasında veri kaybı olmadan dönüşüm yaparsın.`;
 
-// --- SERVICE FUNCTIONS ---
+// --- SERVICE FUNCTIONS (SDK YAPISI DÜZELTİLDİ) ---
 
 declare const pdfjsLib: any;
 declare const mammoth: any;
@@ -108,7 +108,6 @@ export const parseDocument = async (file: File): Promise<string> => {
           resolve(result.value);
         } else if (extension === 'udf' || extension === 'xml') {
           try {
-            // First try as a ZIP (UDFs are zipped XMLs sometimes)
             const zip = await JSZip.loadAsync(arrayBuffer);
             const xmlFile = Object.keys(zip.files).find(name => name.endsWith('.xml') || name.endsWith('content.xml'));
             if (xmlFile) {
@@ -119,13 +118,9 @@ export const parseDocument = async (file: File): Promise<string> => {
                 return;
               }
             }
-          } catch (zipError) {
-            // Not a zip, proceed as plain XML/UDF
-          }
-
-          const decoder = new TextDecoder('utf-8'); // UDFs are typically UTF-8 XML
+          } catch (zipError) {}
+          const decoder = new TextDecoder('utf-8');
           const text = decoder.decode(arrayBuffer);
-          // Basic XML text extraction (removes tags)
           const cleanText = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
           resolve(cleanText);
         } else {
@@ -145,20 +140,24 @@ const safelyParseJSON = (text: string | undefined, fallback: any) => {
 };
 
 export const performSemanticSearch = async (query: string): Promise<string> => {
-  const ai = getAIInstance();
-  const enhancedQuery = `Lütfen aşağıdaki uyuşmazlığa dair Google Search kullanarak en güncel Yargıtay/Danıştay kararlarını bul ve her bir kararı (Mahkeme, Esas, Tarih, Özet) eksiksiz bir blok halinde raporla: ${query}`;
-  console.log("Performing search with query:", enhancedQuery);
+  const model = genAI.getGenerativeModel({ 
+    model: 'gemini-3-pro-preview',
+    systemInstruction: SEARCH_SYSTEM_INSTRUCTION 
+  }, { apiVersion: 'v1beta' });
 
-  const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview', // Updated model for search capability
-    contents: enhancedQuery,
-    config: {
-      systemInstruction: SEARCH_SYSTEM_INSTRUCTION,
-      tools: [{ googleSearch: {} }]
-    }
-  });
-  console.log("Search response:", response.text);
-  return response.text || "İçtihat araması sonucunda somut bir metne ulaşılamadı.";
+  const enhancedQuery = `Lütfen aşağıdaki uyuşmazlığa dair Google Search kullanarak en güncel Yargıtay/Danıştay kararlarını bul ve raporla: ${query}`;
+  
+  try {
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: enhancedQuery }] }],
+      tools: [{ googleSearch: {} } as any]
+    });
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Search error:", error);
+    return "İçtihat araması yapılamadı.";
+  }
 };
 
 export const generatePetitionStream = async (params: {
@@ -169,73 +168,57 @@ export const generatePetitionStream = async (params: {
   fileContent?: string;
   caseLawContext?: string;
 }) => {
-  const ai = getAIInstance();
+  const model = genAI.getGenerativeModel({ 
+    model: 'gemini-3-pro-preview',
+    systemInstruction: PETITION_GENERATOR_SYSTEM 
+  });
+
   let prompt = `Tür: ${params.type}, Makam: ${params.target}, Olay: ${params.summary}. ${params.isLongMode ? 'DETAYLI MOD: Konuyla ilgili Yargıtay ilamlarını ve hukuki gerekçeleri geniş tut.' : 'NORMAL MOD.'}`;
 
-  if (params.caseLawContext) {
-    prompt += `\n\nENTEGRE EDİLECEK GÜNCEL İÇTİHAT BİLGİSİ (Arama Sonuçları):\n${params.caseLawContext}`;
-    prompt += `\n\nYukarıdaki içtihat bilgisini kullanarak dilekçeyi güçlendir. Kararları atıf yaparak kullan.`;
-  }
+  if (params.caseLawContext) prompt += `\n\nİÇTİHATLAR:\n${params.caseLawContext}`;
+  if (params.fileContent) prompt += `\n\nEK DOSYA:\n${params.fileContent.substring(0, 15000)}`;
 
-  if (params.fileContent) {
-    prompt += `\n\nEK BAĞLAM DOSYASI (Bu dosyadaki hukuki verileri ve delilleri dilekçeye entegre et):\n${params.fileContent.substring(0, 20000)}`;
-  }
-
-  console.log("Generating petition with prompt length:", prompt.length);
-
-  return await ai.models.generateContentStream({
-    model: 'gemini-3-pro-preview',
-    contents: prompt,
-    config: {
-      systemInstruction: PETITION_GENERATOR_SYSTEM,
-    }
-  });
+  const result = await model.generateContentStream(prompt);
+  return result;
 };
 
 export const revisePetitionStream = async (current: GeneratedPetition, instruction: string) => {
-  const ai = getAIInstance();
-  return await ai.models.generateContentStream({
+  const model = genAI.getGenerativeModel({ 
     model: 'gemini-3-pro-preview',
-    contents: `Mevcut Dilekçe: ${current.content}\n\nRevizyon Talimatı: ${instruction}\n\nLütfen dilekçeyi bu yönde güncelle.`,
-    config: {
-      systemInstruction: PETITION_GENERATOR_SYSTEM,
-    }
+    systemInstruction: PETITION_GENERATOR_SYSTEM 
   });
+
+  return await model.generateContentStream(`Mevcut Dilekçe: ${current.content}\n\nRevizyon Talimatı: ${instruction}`);
 };
 
 export const analyzePetition = async (content: string): Promise<string> => {
-  const ai = getAIInstance();
-  const response = await ai.models.generateContent({
+  const model = genAI.getGenerativeModel({ 
     model: 'gemini-3-pro-preview',
-    contents: content,
-    config: {
-      systemInstruction: PETITION_ANALYSIS_SYSTEM
-    }
+    systemInstruction: PETITION_ANALYSIS_SYSTEM 
   });
-  return response.text || "Analiz raporu oluşturulamadı.";
+  const result = await model.generateContent(content);
+  return result.response.text();
 };
 
 export const analyzeContractRisk = async (content: string): Promise<string> => {
-  const ai = getAIInstance();
-  const response = await ai.models.generateContent({
+  const model = genAI.getGenerativeModel({ 
     model: 'gemini-3-pro-preview',
-    contents: content,
-    config: {
-      systemInstruction: CONTRACT_RISK_SYSTEM
-    }
+    systemInstruction: CONTRACT_RISK_SYSTEM 
   });
-  return response.text || "Sözleşme analiz raporu oluşturulamadı.";
+  const result = await model.generateContent(content);
+  return result.response.text();
 };
 
 export const convertFile = async (content: string, from: string, to: string): Promise<ConversionResult> => {
-  const ai = getAIInstance();
-  const response = await ai.models.generateContent({
+  const model = genAI.getGenerativeModel({ 
     model: 'gemini-3-pro-preview',
-    contents: `Format: ${from} to ${to}\nContent: ${content.substring(0, 10000)}`,
-    config: {
-      systemInstruction: FILE_CONVERTER_SYSTEM,
-      responseMimeType: "application/json"
-    }
+    systemInstruction: FILE_CONVERTER_SYSTEM
   });
-  return safelyParseJSON(response.text, { status: 'failed', udf_data: {}, confidence_score: 0, output_text: "" });
+  
+  const result = await model.generateContent({
+    contents: [{ role: 'user', parts: [{ text: `Format: ${from} to ${to}\nContent: ${content.substring(0, 10000)}` }] }],
+    generationConfig: { responseMimeType: "application/json" }
+  });
+  
+  return safelyParseJSON(result.response.text(), { status: 'failed', udf_data: {}, confidence_score: 0, output_text: "" });
 };
