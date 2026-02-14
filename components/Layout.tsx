@@ -110,13 +110,13 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, cred
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as AppTab)}
                 className={`w-full flex items-center p-3 rounded-xl transition-all duration-500 group ${activeTab === tab.id
-                    ? 'text-slate-900 dark:text-luxury-silver bg-slate-50 dark:bg-luxury-midnight shadow-sm'
-                    : 'text-slate-400 dark:text-luxury-silver/60 hover:text-slate-900 dark:hover:text-luxury-silver hover:translate-x-1'
+                  ? 'text-slate-900 dark:text-luxury-silver bg-slate-50 dark:bg-luxury-midnight shadow-sm'
+                  : 'text-slate-400 dark:text-luxury-silver/60 hover:text-slate-900 dark:hover:text-luxury-silver hover:translate-x-1'
                   } ${!isSidebarOpen ? 'justify-center' : 'gap-4'}`}
               >
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-500 flex-shrink-0 ${activeTab === tab.id
-                    ? 'bg-[#C5A059] text-white shadow-lg'
-                    : 'bg-slate-50 dark:bg-luxury-charcoal group-hover:bg-slate-100 dark:group-hover:bg-luxury-midnight'
+                  ? 'bg-[#C5A059] text-white shadow-lg'
+                  : 'bg-slate-50 dark:bg-luxury-charcoal group-hover:bg-slate-100 dark:group-hover:bg-luxury-midnight'
                   }`}>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={tab.d} />
@@ -202,28 +202,27 @@ const Layout: React.FC<LayoutProps> = ({ children, activeTab, setActiveTab, cred
           </div>
         </div>
       </main>
-    </main>
 
-      {/* Mobile Navigation (Bottom Tab Bar) */ }
-  <div className="lg:hidden fixed bottom-6 left-6 right-6 bg-white/90 dark:bg-luxury-charcoal/90 backdrop-blur-xl border border-slate-100 dark:border-slate-800 z-50 rounded-2xl shadow-2xl safe-pb transition-all duration-700">
-    <div className="flex justify-around items-center p-4">
-      {navItems.map((tab) => (
-        <button
-          key={tab.id}
-          onClick={() => setActiveTab(tab.id as AppTab)}
-          className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${activeTab === tab.id
-              ? 'text-[#C5A059] scale-110'
-              : 'text-slate-400 dark:text-luxury-silver/50 hover:text-slate-600 dark:hover:text-luxury-silver'
-            }`}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeTab === tab.id ? 2 : 1.5} d={tab.d} /></svg>
-          {activeTab === tab.id && (
-            <span className="w-1 h-1 rounded-full bg-[#C5A059]"></span>
-          )}
-        </button>
-      ))}
-    </div>
-  </div>
+      {/* Mobile Navigation (Bottom Tab Bar) */}
+      <div className="lg:hidden fixed bottom-6 left-6 right-6 bg-white/90 dark:bg-luxury-charcoal/90 backdrop-blur-xl border border-slate-100 dark:border-slate-800 z-50 rounded-2xl shadow-2xl safe-pb transition-all duration-700">
+        <div className="flex justify-around items-center p-4">
+          {navItems.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as AppTab)}
+              className={`flex flex-col items-center gap-1.5 transition-all duration-300 ${activeTab === tab.id
+                ? 'text-[#C5A059] scale-110'
+                : 'text-slate-400 dark:text-luxury-silver/50 hover:text-slate-600 dark:hover:text-luxury-silver'
+                }`}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={activeTab === tab.id ? 2 : 1.5} d={tab.d} /></svg>
+              {activeTab === tab.id && (
+                <span className="w-1 h-1 rounded-full bg-[#C5A059]"></span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
     </div >
   );
 };
