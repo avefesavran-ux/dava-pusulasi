@@ -52,7 +52,7 @@ GÖREVİN: Profesyonel, ağır başlı ve hukuki terminolojiye uygun bir dilekç
 
 ÖNEMLİ KURALLAR:
 1. İÇTİHAT ŞARTI: Dilekçenin "AÇIKLAMALAR" veya "HUKUKİ NEDENLER" bölümüne mutlaka konuyla ilgili en az 1-2 adet güncel Yargıtay kararı (Esas ve Karar numarası belirterek) ekle. "Yargıtay ... Hukuk Dairesi'nin ... Esas, ... Karar sayılı ilamı uyarınca..." formatını kullan.
-2. FORMAT: KALINLAŞTIRMA İÇİN ** İŞARETİNİ KESİNLİKLE KULLANMA. Başlıkları sadece büyük harfle yaz (Örn: DAVACI:).
+2. FORMAT: KALINLAŞTIRMA İÇİN ** İŞARETİNİ KESİNLİKLE KULLANMA. Başlıkları büyük harfle yaz (Örn: DAVACI    :).
 3. YAPI: Yanıtına mutlaka "BASLIK:" ile başla ve içeriği "ICERIK:" etiketinden sonra ver.
 
 Dilekçe Yapısı:
@@ -61,7 +61,7 @@ DAVACI / DAVALI BİLGİLERİ
 KONU / DAVA DEĞERİ
 AÇIKLAMALAR (Hukuki dayanaklar ve Yargıtay atıfları burada yer almalı)
 DELİLLER VE HUKUKİ NEDENLER
-NETİCE-İ TALEP`;
+NETİCE ve TALEP`;
 
 const PETITION_ANALYSIS_SYSTEM = `Sen, Türkiye Cumhuriyeti hukukuna hakim kıdemli bir Dava Stratejistisin. 
 Sana sunulan metni şu başlıklarda analiz et:
