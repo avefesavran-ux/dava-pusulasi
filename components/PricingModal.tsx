@@ -52,10 +52,10 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) => {
       <div className="relative bg-[#FDFCFB] dark:bg-[#050B14] rounded-[3.5rem] shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] w-full max-w-7xl max-h-full overflow-hidden flex flex-col reveal luxury-card border dark:border-white/5 transition-colors duration-700">
 
         {/* Sticky Header with matching rounded corners */}
-        <div className="sticky top-0 flex justify-end p-8 lg:p-10 bg-[#FDFCFB]/90 dark:bg-[#050B14]/90 backdrop-blur-md z-30 rounded-t-[3.5rem] border-b border-slate-50/50 dark:border-white/5 transition-colors duration-700">
+        <div className="sticky top-0 flex justify-end p-8 lg:p-10 z-30 transition-colors duration-700 relative">
           <button
             onClick={onClose}
-            className="w-12 h-12 rounded-full border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-[#C5A059] dark:hover:text-white dark:hover:border-[#C5A059] transition-all duration-500 bg-white/50 dark:bg-white/5"
+            className="w-12 h-12 rounded-full border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:border-[#C5A059] dark:hover:text-white dark:hover:border-[#C5A059] transition-all duration-500 bg-white/50 dark:bg-white/5 backdrop-blur-md"
             aria-label="Kapat"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -65,10 +65,10 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) => {
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar px-8 pb-20 lg:px-24 lg:pb-32">
           {/* Modal Content Header */}
-          <div className="text-center mb-20 mt-10 max-w-3xl mx-auto">
+          <div className="text-center mb-20 mt-0 max-w-3xl mx-auto">
             <span className="text-[10px] uppercase tracking-[0.6em] font-black text-[#C5A059] mb-6 block">Premium Erişim</span>
             <h2 className="text-5xl lg:text-6xl font-serif italic font-light text-slate-900 dark:text-[#E2E8F0] mb-8 leading-tight transition-colors duration-700">İşinizi <span className="text-[#C5A059]">Sanata</span> Dönüştürün.</h2>
-            <p className="text-lg text-slate-500 dark:text-[#94A3B8] font-light leading-relaxed transition-colors duration-700">Siz adalete odaklanın, biz teknolojinin tüm imkanlarını sizin için seferber edelim.</p>
+            <p className="text-lg text-slate-500 dark:text-[#94A3B8]/60 font-light leading-relaxed transition-colors duration-700">Siz adalete odaklanın, biz teknolojinin tüm imkanlarını sizin için seferber edelim.</p>
           </div>
 
           {/* Pricing Grid */}
@@ -77,8 +77,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) => {
               <div
                 key={i}
                 className={`relative p-10 lg:p-12 rounded-[3rem] border transition-all duration-700 flex flex-col ${plan.isPopular
-                    ? 'border-[#C5A059] bg-white dark:bg-[#0B162C] shadow-2xl md:scale-105 z-10'
-                    : 'border-slate-100 dark:border-white/5 bg-white/50 dark:bg-[#112240] hover:bg-white dark:hover:bg-[#112240] hover:border-slate-200 dark:hover:border-white/10'
+                  ? 'border-[#C5A059] bg-white dark:bg-[#0B162C] shadow-2xl md:scale-105 z-10'
+                  : 'border-slate-100 dark:border-white/5 bg-white/50 dark:bg-[#112240] hover:bg-white dark:hover:bg-[#112240] hover:border-slate-200 dark:hover:border-white/10'
                   }`}
               >
                 {plan.isPopular && (
@@ -109,8 +109,8 @@ const PricingModal: React.FC<PricingModalProps> = ({ isOpen, onClose }) => {
                 <button
                   onClick={plan.onClick}
                   className={`w-full py-5 rounded-[2rem] font-bold text-[11px] uppercase tracking-[0.2em] transition-all duration-700 active:scale-95 ${plan.isPopular
-                      ? 'bg-slate-900 text-white hover:bg-[#C5A059] shadow-2xl shadow-slate-900/10 dark:bg-[#E2E8F0] dark:text-black dark:hover:bg-white dark:hover:text-black dark:shadow-none'
-                      : 'bg-slate-50 text-slate-500 hover:bg-slate-900 hover:text-white dark:bg-[#E2E8F0] dark:text-black dark:hover:bg-white dark:hover:text-black dark:border-none'
+                    ? 'bg-slate-900 text-white hover:bg-[#C5A059] shadow-2xl shadow-slate-900/10 dark:bg-[#E2E8F0] dark:text-black dark:hover:bg-white dark:hover:text-black dark:shadow-none'
+                    : 'bg-slate-50 text-slate-500 hover:bg-slate-900 hover:text-white dark:bg-[#E2E8F0] dark:text-black dark:hover:bg-white dark:hover:text-black dark:border-none'
                     }`}
                 >
                   {plan.buttonText}
