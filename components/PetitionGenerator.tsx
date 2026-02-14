@@ -111,9 +111,11 @@ const PetitionGenerator: React.FC<PetitionGeneratorProps> = ({ deductCredit, cre
         setLoadingStep('İçtihatlar ve Emsal Kararlar Araştırılıyor...');
         // Perform semantic search
         try {
-          const searchResult = await performSemanticSearch(formData.summary);
-          caseLawContext = searchResult;
-        } catch (searchErr: any) {
+          const searchStream = await performSemanticSearch(formData.summary);
+          for await (const chunk of searchStream.stream) {
+            caseLawContext += chunk.text();
+          }
+        } catch (searchErr) {
           console.error("Search error:", searchErr);
           // Continue without search results if search fails, but maybe notify user?
         }

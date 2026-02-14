@@ -21,6 +21,16 @@ const SEARCH_SYSTEM_INSTRUCTION = `Sen, Türkiye Cumhuriyeti hukuk sistemine en 
 
 GÖREVİN: Kullanıcının uyuşmazlığını analiz etmek ve Google Search kullanarak bu olayla doğrudan bağlantılı, GÜNCEL Yargıtay, Danıştay veya AYM kararlarını bulup raporlamaktır.
 
+ÖNEMLİ: Cevabına başlarken MUTLAKA önce hukuki analiz sürecini, arama stratejini ve bulgularını değerlendirdiğin bir düşünme süreci yaz. Bu süreci <thinking>...</thinking> etiketleri arasına yaz. Kullanıcıya doğrudan bu süreci göstereceğiz.
+
+Örnek Thinking Yapısı:
+<thinking>
+1. Uyuşmazlık Tanımı: Kullanıcı ... konusunda ihtilaf yaşıyor.
+2. Anahtar Kelimeler: "...", "..." kavramları üzerinden Yargıtay ... Hukuk Dairesi kararları taranmalı.
+3. Arama Stratejisi: Google Search ile şu sorgular yapılacak...
+4. Bulgu Değerlendirmesi: Bulunan şu karar olayla örtüşüyor...
+</thinking>
+
 ÖNEMLİ KURALLAR:
 1. EMOJİ ASLA KULLANMA.
 2. KALINLAŞTIRMA İÇİN ** İŞARETİNİ ASLA KULLANMA.
@@ -28,7 +38,7 @@ GÖREVİN: Kullanıcının uyuşmazlığını analiz etmek ve Google Search kull
 4. Başlıkları tam olarak aşağıdaki gibi büyük harflerle kullan.
 5. Her bir emsal kararı TEK BİR BLOK halinde sun. Bir karara ait MAHKEME, ESAS/KARAR, TARİH ve ÖZET bilgilerini asla birbirinden ayırma, hepsini aynı kutuda toplanacak şekilde ardışık yaz.
 
-YANIT ŞABLONUN:
+YANIT ŞABLONUN (Thinking bloğundan sonra):
 
 UYUŞMAZLIĞIN HUKUKİ NİTELİĞİ
 Olayın hukuki tanımı ve uygulanacak kanun maddelerini paragraflar halinde açıkla.
@@ -118,7 +128,7 @@ export const parseDocument = async (file: File): Promise<string> => {
                 return;
               }
             }
-          } catch (zipError) {}
+          } catch (zipError) { }
           const decoder = new TextDecoder('utf-8');
           const text = decoder.decode(arrayBuffer);
           const cleanText = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
@@ -139,24 +149,23 @@ const safelyParseJSON = (text: string | undefined, fallback: any) => {
   catch (e) { return fallback; }
 };
 
-export const performSemanticSearch = async (query: string): Promise<string> => {
-  const model = genAI.getGenerativeModel({ 
-    model: 'gemini-3-pro-preview',
-    systemInstruction: SEARCH_SYSTEM_INSTRUCTION 
+export const performSemanticSearch = async (query: string) => {
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.0-flash-thinking-exp-01-21',
+    systemInstruction: SEARCH_SYSTEM_INSTRUCTION
   }, { apiVersion: 'v1beta' });
 
   const enhancedQuery = `Lütfen aşağıdaki uyuşmazlığa dair Google Search kullanarak en güncel Yargıtay/Danıştay kararlarını bul ve raporla: ${query}`;
-  
+
   try {
-    const result = await model.generateContent({
+    const result = await model.generateContentStream({
       contents: [{ role: 'user', parts: [{ text: enhancedQuery }] }],
       tools: [{ googleSearch: {} } as any]
     });
-    const response = await result.response;
-    return response.text();
+    return result;
   } catch (error) {
     console.error("Search error:", error);
-    return "İçtihat araması yapılamadı.";
+    throw error;
   }
 };
 
@@ -168,9 +177,9 @@ export const generatePetitionStream = async (params: {
   fileContent?: string;
   caseLawContext?: string;
 }) => {
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: 'gemini-3-pro-preview',
-    systemInstruction: PETITION_GENERATOR_SYSTEM 
+    systemInstruction: PETITION_GENERATOR_SYSTEM
   });
 
   let prompt = `Tür: ${params.type}, Makam: ${params.target}, Olay: ${params.summary}. ${params.isLongMode ? 'DETAYLI MOD: Konuyla ilgili Yargıtay ilamlarını ve hukuki gerekçeleri geniş tut.' : 'NORMAL MOD.'}`;
@@ -183,42 +192,42 @@ export const generatePetitionStream = async (params: {
 };
 
 export const revisePetitionStream = async (current: GeneratedPetition, instruction: string) => {
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: 'gemini-3-pro-preview',
-    systemInstruction: PETITION_GENERATOR_SYSTEM 
+    systemInstruction: PETITION_GENERATOR_SYSTEM
   });
 
   return await model.generateContentStream(`Mevcut Dilekçe: ${current.content}\n\nRevizyon Talimatı: ${instruction}`);
 };
 
 export const analyzePetition = async (content: string): Promise<string> => {
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: 'gemini-3-pro-preview',
-    systemInstruction: PETITION_ANALYSIS_SYSTEM 
+    systemInstruction: PETITION_ANALYSIS_SYSTEM
   });
   const result = await model.generateContent(content);
   return result.response.text();
 };
 
 export const analyzeContractRisk = async (content: string): Promise<string> => {
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: 'gemini-3-pro-preview',
-    systemInstruction: CONTRACT_RISK_SYSTEM 
+    systemInstruction: CONTRACT_RISK_SYSTEM
   });
   const result = await model.generateContent(content);
   return result.response.text();
 };
 
 export const convertFile = async (content: string, from: string, to: string): Promise<ConversionResult> => {
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: 'gemini-3-pro-preview',
     systemInstruction: FILE_CONVERTER_SYSTEM
   });
-  
+
   const result = await model.generateContent({
     contents: [{ role: 'user', parts: [{ text: `Format: ${from} to ${to}\nContent: ${content.substring(0, 10000)}` }] }],
     generationConfig: { responseMimeType: "application/json" }
   });
-  
+
   return safelyParseJSON(result.response.text(), { status: 'failed', udf_data: {}, confidence_score: 0, output_text: "" });
 };

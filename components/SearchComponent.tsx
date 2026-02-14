@@ -13,24 +13,74 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
   const [report, setReport] = useState<string>('');
   const [error, setError] = useState('');
 
+  const [displayReport, setDisplayReport] = useState('');
+  const [thinkingContent, setThinkingContent] = useState('');
+  const [isThinkingComplete, setIsThinkingComplete] = useState(false);
+  const pendingTextRef = React.useRef<string>("");
+  const displayIntervalRef = React.useRef<number | null>(null);
+
+  // Smooth typing effect
+  React.useEffect(() => {
+    displayIntervalRef.current = window.setInterval(() => {
+      if (pendingTextRef.current.length > 0) {
+        // Dynamic speed
+        const step = Math.max(1, Math.floor(pendingTextRef.current.length / 3));
+        const chars = pendingTextRef.current.substring(0, step);
+        pendingTextRef.current = pendingTextRef.current.substring(step);
+
+        setDisplayReport(prev => {
+          const raw = prev + chars;
+          // Parse thinking on the fly
+          const thinkingMatch = raw.match(/<thinking>([\s\S]*?)<\/thinking>/);
+          if (thinkingMatch) {
+            setThinkingContent(thinkingMatch[1].trim());
+            setIsThinkingComplete(true);
+            return raw; // We keep raw for now, but render will exclude thinking
+          } else if (raw.includes('<thinking>')) {
+            // Partial thinking
+            const start = raw.indexOf('<thinking>');
+            setThinkingContent(raw.substring(start + 10).trim());
+            return raw;
+          }
+          return raw;
+        });
+      }
+    }, 15);
+
+    return () => {
+      if (displayIntervalRef.current) clearInterval(displayIntervalRef.current);
+    };
+  }, []);
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
     if (creditsRemaining < 2) {
-        setError('Yetersiz kredi. Günlük limitiniz dolmuş görünüyor.');
-        return;
+      setError('Yetersiz kredi. Günlük limitiniz dolmuş görünüyor.');
+      return;
     }
 
     setLoading(true);
     setReport('');
+    setDisplayReport('');
+    setThinkingContent('');
+    setIsThinkingComplete(false);
+    pendingTextRef.current = '';
     setError('');
-    
+
     try {
-      const data = await performSemanticSearch(query);
-      if (!data) throw new Error("Sonuç üretilemedi.");
-      setReport(data);
+      // Append instruction to force thinking output visibility if needed, though the model does it naturally
+      const result = await performSemanticSearch(query);
+
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        pendingTextRef.current += chunkText;
+        setReport(prev => prev + chunkText); // Keep full raw report for logic if needed
+      }
+
       deductCredit(2);
     } catch (err) {
+      console.error("Search failed:", err);
       setError('İçtihat araması sırasında bir hata oluştu.');
     } finally {
       setLoading(false);
@@ -38,7 +88,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
   };
 
   const copyToClipboard = (text?: string) => {
-    const content = text || report;
+    const content = text || (displayReport.replace(/<thinking>[\s\S]*?<\/thinking>/, '').trim());
     if (!content || content.trim() === '') return;
     navigator.clipboard.writeText(String(content))
       .then(() => alert('İçerik panoya kopyalandı.'))
@@ -57,7 +107,9 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
   };
 
   const renderedReport = useMemo(() => {
-    if (!report) return null;
+    // Remove thinking block for final report rendering
+    const finalContent = displayReport.replace(/<thinking>[\s\S]*?<\/thinking>/, '').trim();
+    if (!finalContent) return null;
 
     const sectionNames = [
       'UYUŞMAZLIĞIN HUKUKİ NİTELİĞİ',
@@ -67,13 +119,27 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
     ];
 
     const regex = new RegExp(`(${sectionNames.join('|')})`, 'g');
-    const parts = report.split(regex).filter(p => p.trim() !== '');
+    const parts = finalContent.split(regex).filter(p => p.trim() !== '');
 
     const sections: { title: string; content: string }[] = [];
     for (let i = 0; i < parts.length; i += 2) {
       if (parts[i] && parts[i + 1]) {
         sections.push({ title: parts[i].trim(), content: parts[i + 1].trim() });
       }
+    }
+
+    // Handle partial streaming state better - if we have a title but no content yet, or vice versa
+    if (sections.length === 0 && finalContent.length > 0) {
+      // Fallback for initial unformatted text or if regex doesn't match yet
+      return (
+        <div className="space-y-8 reveal">
+          <div className="luxury-card p-12 lg:p-16 rounded-[4rem] bg-[#FDFCFB]/50 dark:bg-[#080C14] border border-slate-100/50 dark:border-slate-800 transition-colors">
+            <div className="text-lg lg:text-xl text-slate-700 dark:text-luxury-silver font-light leading-[2.1] whitespace-pre-wrap text-justify selection:bg-[#C5A059]/20 opacity-90 transition-colors">
+              {formatTextWithItalics(finalContent)}
+            </div>
+          </div>
+        </div>
+      );
     }
 
     return sections.map((section, idx) => {
@@ -88,7 +154,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
               {decisions.map((decision, dIdx) => {
                 const lines = decision.split('\n').map(l => l.trim()).filter(l => l);
                 let mahkeme = '', esas = '', tarih = '', ozet = '';
-                
+
                 lines.forEach(line => {
                   if (line.startsWith('MAHKEME:')) mahkeme = line.replace('MAHKEME:', '').trim();
                   else if (line.startsWith('ESAS/KARAR:')) esas = line.replace('ESAS/KARAR:', '').trim();
@@ -99,7 +165,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
                 return (
                   <div key={dIdx} className="luxury-card p-12 lg:p-14 rounded-[3.5rem] bg-white dark:bg-[#080C14] border border-[#C5A059]/15 shadow-xl relative overflow-hidden group transition-all duration-700">
                     <div className="absolute top-0 right-0 w-40 h-40 bg-[#C5A059]/5 rounded-full -mr-20 -mt-20 blur-3xl group-hover:bg-[#C5A059]/10 transition-all duration-700"></div>
-                    
+
                     <div className="relative z-10 space-y-8">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <div className="space-y-1">
@@ -119,7 +185,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
                       <div className="pt-8 border-t border-slate-50 dark:border-slate-800/60 transition-colors">
                         <div className="flex justify-between items-center mb-6">
                           <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#C5A059]">Karar Gerekçesi</span>
-                          <button 
+                          <button
                             onClick={() => copyToClipboard(ozet)}
                             className="text-[9px] font-black uppercase tracking-widest text-slate-400 dark:text-luxury-silver hover:text-[#C5A059] transition-colors"
                           >
@@ -152,7 +218,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
         </div>
       );
     });
-  }, [report]);
+  }, [displayReport]);
 
   return (
     <div className="space-y-24 reveal pb-32">
@@ -176,28 +242,45 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
               className="w-full p-12 pr-12 rounded-[3.3rem] bg-transparent dark:bg-transparent focus:outline-none min-h-[220px] text-xl font-light placeholder:text-slate-300 dark:placeholder:text-luxury-silver/20 transition-all border-none resize-none leading-relaxed text-slate-900 dark:text-luxury-silver"
             />
             <div className="p-8 pt-0 flex justify-between items-center mt-6">
-               <div className="flex gap-4">
-                  <span className="flex items-center gap-2 text-[10px] uppercase font-black text-slate-300 dark:text-luxury-silver/40 tracking-[0.2em] transition-colors">
-                    <span className={`w-1.5 h-1.5 rounded-full ${loading ? 'bg-[#C5A059] animate-ping' : 'bg-emerald-400'}`}></span>
-                    {loading ? 'Yargıtay Arşivi Taranıyor...' : 'Motor Aktif'}
-                  </span>
-               </div>
-               <button
-                 type="submit"
-                 disabled={loading || !query.trim()}
-                 className="px-16 py-6 bg-slate-900 dark:bg-luxury-charcoal text-white border border-[#C5A059] font-black rounded-2xl shadow-2xl hover:bg-[#C5A059] transition-all duration-500 disabled:opacity-40 text-[12px] tracking-[0.2em] uppercase active:scale-95 opacity-100"
-               >
-                 <span>Aramayı Başlat (2 Kredi)</span>
-               </button>
+              <div className="flex gap-4">
+                <span className="flex items-center gap-2 text-[10px] uppercase font-black text-slate-300 dark:text-luxury-silver/40 tracking-[0.2em] transition-colors">
+                  <span className={`w-1.5 h-1.5 rounded-full ${loading ? 'bg-[#C5A059] animate-ping' : 'bg-emerald-400'}`}></span>
+                  {loading ? 'Motor Çalışıyor...' : 'Motor Aktif'}
+                </span>
+              </div>
+              <button
+                type="submit"
+                disabled={loading || !query.trim()}
+                className="px-16 py-6 bg-slate-900 dark:bg-luxury-charcoal text-white border border-[#C5A059] font-black rounded-2xl shadow-2xl hover:bg-[#C5A059] transition-all duration-500 disabled:opacity-40 text-[12px] tracking-[0.2em] uppercase active:scale-95 opacity-100"
+              >
+                <span>Aramayı Başlat (2 Kredi)</span>
+              </button>
             </div>
           </form>
         </div>
 
-        {report && (
+        {/* Thinking Process Display */}
+        {thinkingContent && (
+          <div className="max-w-4xl mx-auto mb-12 reveal">
+            <div className={`p-8 rounded-[2rem] border transition-all duration-700 ${isThinkingComplete ? 'bg-slate-50/50 dark:bg-white/5 border-slate-200 dark:border-slate-800 opacity-60' : 'bg-white dark:bg-[#0F172A] border-[#C5A059]/30 shadow-2xl shadow-[#C5A059]/10'}`}>
+              <div className="flex items-center gap-4 mb-4">
+                <span className={`w-2 h-2 rounded-full ${isThinkingComplete ? 'bg-emerald-500' : 'bg-[#C5A059] animate-pulse'}`}></span>
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-luxury-silver/60">
+                  {isThinkingComplete ? 'Hukuki Muhakeme Tamamlandı' : 'Analiz Süreci İşletiliyor...'}
+                </h4>
+              </div>
+              <div className="font-mono text-xs lg:text-sm text-slate-600 dark:text-luxury-silver/80 leading-relaxed whitespace-pre-wrap border-l-2 border-[#C5A059]/20 pl-4">
+                {thinkingContent}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {(displayReport && !displayReport.startsWith('<thinking>') || isThinkingComplete) && (
           <div className="space-y-24 reveal mt-12 transition-colors duration-700">
             <div className="flex items-center justify-between px-8 border-b border-slate-100 dark:border-slate-800 pb-10 transition-colors">
               <h3 className="text-[11px] uppercase tracking-[0.6em] font-black text-slate-900 dark:text-luxury-silver transition-colors">Sorgu Analiz Raporu</h3>
-              <button 
+              <button
                 onClick={() => copyToClipboard()}
                 className="flex items-center gap-3 text-[10px] uppercase font-bold text-[#C5A059] hover:text-slate-900 dark:hover:text-luxury-silver transition-colors tracking-widest"
               >
@@ -207,13 +290,6 @@ const SearchComponent: React.FC<SearchComponentProps> = ({ deductCredit, credits
             <div className="space-y-24">
               {renderedReport}
             </div>
-          </div>
-        )}
-
-        {loading && (
-          <div className="text-center py-24">
-            <div className="w-16 h-16 border-[3px] border-[#C5A059] border-t-transparent rounded-full mx-auto mb-10 animate-spin"></div>
-            <p className="font-serif italic text-3xl text-slate-400 dark:text-luxury-silver transition-colors">Derin içtihat taraması yürütülüyor...</p>
           </div>
         )}
       </div>
